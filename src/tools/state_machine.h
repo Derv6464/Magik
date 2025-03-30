@@ -1,20 +1,41 @@
-#include "../sensor/data.h"
+#include "../sensors/data.h"
+#include "logger.h"
+#include "FreeRTOS.h"
+#include "task.h" 
 
-enum state_machine{
-    INIT,
-    BLUETOOTH_SETTINGS,
-    CALIBRATING,
-    READY,
-    POWERED,
-    COASTING,
-    DROUGE,
-    MAIN,
-    LANDED
-};
+class StateMachine {
+public:
+    typedef void (*StateHandler)();
+    enum State : uint8_t{
+        INIT,
+        BLUETOOTH_SETTINGS,
+        CALIBRATING,
+        READY,
+        POWERED,
+        COASTING,
+        DROUGE,
+        MAIN,
+        LANDED,
+        NUM_STATES
+    };
 
-struct rocket_state
-{
-   state_machine state;
-   flight_data data;
+    StateMachine(StateHandler handlers[]);
+    void run(void * pvParameters );
 
+private:
+    StateHandler state_handlers[NUM_STATES];
+    bool called_once[NUM_STATES];
+    State current_state;
+    core_flight_data last_data;
+    void update_state(core_flight_data data);
+    void check_settings_state(bool setting_pin);
+    void check_bt_done(bool bt_active, bool setting_pin);
+    void check_calibrating_state();
+    void check_ready_state();
+    void check_powered_state();
+    void check_coasting_state();
+    void check_drouge_state();
+    void check_main_state();
+    void check_landed_state();
+    void change_state(State new_state);
 };

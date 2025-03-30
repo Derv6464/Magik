@@ -1,6 +1,8 @@
 file(GLOB SOURCES
     main.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/outputs/*.cpp  # This will include all .cpp files in the outputs directory
+    ${CMAKE_CURRENT_SOURCE_DIR}/outputs/*.cpp  
+    ${CMAKE_CURRENT_SOURCE_DIR}/tools/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/sensors/*.cpp
 )
 
 add_executable(${ProjectName} ${SOURCES})

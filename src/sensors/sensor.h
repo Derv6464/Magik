@@ -1,11 +1,12 @@
-class Sensor{
-    public:
-        Sensor();
-        ~Sensor();
-        virtual void start();
-        virtual void stop();
-        virtual int get_data();
-    private:
-        virtual void process() = 0;
-        virtual void read() = 0;
+#ifndef SENSOR_H_
+#define SENSOR_H_
+
+// Template base class
+template <typename T>
+class Sensor {
+public:
+    virtual ~Sensor() = default;
+    virtual void update(T& data) = 0;  // Pure virtual function to update data of type T
 };
+
+#endif // SENSOR_H_

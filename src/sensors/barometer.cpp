@@ -1,23 +1,23 @@
 #include "barometer.h"
+#include <stdio.h>
 
-Barometer::Barometer(){
-    printf("Barometer Constructor\n");
-    //initialize();
+Barometer::Barometer(SPI *spi, int cs) {
+    printf("Barometer created\n");
+    this->spi = spi;
 }
 
 Barometer::~Barometer(){
-    printf("Barometer Destructor\n");
-}
-
-int Barometer::get_data(){
-    printf("Barometer Get Data\n");
-    return 0;
-}
-
-void Barometer::process(){
-    printf("Barometer Process\n");
+    printf("Barometer destroyed\n");
 }
 
 void Barometer::read(){
-    printf("Barometer Read\n");
+    printf("Barometer read\n");
 }
+
+void Barometer::update(core_flight_data& data){
+    printf("Barometer update\n");
+    data.altitude = 10;
+}
+
+
+
