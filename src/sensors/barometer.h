@@ -4,16 +4,20 @@
 #include "sensor.h"
 #include "tools/interfaces.h"
 #include "data.h"
+#include "config.h"
+#include <stdio.h>
 
-class Barometer : public Sensor<core_flight_data> {
+#ifdef BARO_BMP390
+#include "drivers/bmp390/bmp390.h"
+#endif
+
+class Barometer{
     public:
         Barometer(SPI *spi, int cs);
         ~Barometer();
-        void update(core_flight_data& data) override;
+        Sensor<core_flight_data>* getSensor() { return barometer; }
     private:
-        SPI *spi;
-        void read();
-        void process();
+        Sensor<core_flight_data>* barometer;
 };
 
 #endif // BAROMETER_H

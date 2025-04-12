@@ -3,7 +3,11 @@ file(GLOB SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/outputs/*.cpp  
     ${CMAKE_CURRENT_SOURCE_DIR}/tools/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/sensors/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/sensors/drivers/bmp390/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/sensors/drivers/bmp390/*.c
 )
+# Debugging: Print the collected sources
+message(STATUS "Collected sources: ${SOURCES}")
 
 add_executable(${ProjectName} ${SOURCES})
 
@@ -24,6 +28,7 @@ target_link_libraries(${ProjectName}
     hardware_pio
     hardware_flash 
     hardware_sync
+    hardware_spi
     )
 
 pico_add_extra_outputs(${ProjectName})
