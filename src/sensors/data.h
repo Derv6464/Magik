@@ -15,25 +15,27 @@ struct gyro_data
     int z;
 };
 
+struct baro_data
+{
+    int pressure;
+    float temperature;
+};
+
 struct core_flight_data
 {
     int time;
-    int altitude;
-    int velocity;
+    baro_data barometer;
     accle_data acceleration;
-    int temperature;
     bool setting_pin;
     bool bt_active;
 };
 
-
-
 struct gps_data
 {
-    int latitude;
-    int longitude;
-    int altitude;
-    int velocity;
+    float latitude;
+    float longitude;
+    float altitude;
+    float velocity;
     int satellites;
 };
 

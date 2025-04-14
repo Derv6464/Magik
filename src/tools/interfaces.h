@@ -7,6 +7,8 @@
 #include "pico/binary_info.h"
 #include "hardware/spi.h"
 #include "hardware/timer.h"
+#include "hardware/uart.h"
+#include "FreeRTOS.h"
 
 #define READ_BIT 0x80
 
@@ -56,19 +58,21 @@ class I2C{
         int scl;
 };
 
-//class UART{
-//
-//}
-
-
-class USB{
+class UART{
     public:
-        USB(int tx, int rx, int port, int baudrate);
-        void write(int data);
-        int read();
+        UART(int tx, int rx, uart_inst_t* port, int baudrate, int packet_size);
+        ~UART() { printf("UART destroyed\n"); }
+        void write(char* data);
+        void read(char* buffer);
+        void read(char* buffer, int custom_packet_size);
+        int getPacketSize() { return packet_size; }
 
     private:
+        void setup();
         int tx;
         int rx;
-}
+        uart_inst_t* port;
+        int baudrate;
+        int packet_size;
+};
 #endif // INTERFACES_H

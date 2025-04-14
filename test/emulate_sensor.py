@@ -1,10 +1,7 @@
-class UART:
-    def __init__(self, data):
-        self.data = data
+import serial
+import time
+import struct
 
-    def send(self, data):
-        print("Sending data: " + data)
-    
 class DataPoint:
     def __init__(self, value, values_name):
         self.values_name = values_name
@@ -16,24 +13,21 @@ class DataStamps:
         self.data_points = data_points
 
     def get_data(self):
-        data = ""
-        for point in self.data_points:
-            data += point.values_name + str(point.value)
-        return data
+        return [point.value for point in self.data_points]
 
     def get_time(self):
         return self.time
 
 class Sensor:
-    def __init__(self, file_loc, name, columns):
+    def __init__(self, file_loc, name, columns , struc):
         self.file_loc = file_loc
         self.name = name
         self.data = []
         self.current_index = 0
         self.columns = columns
+        self.struc = struc
 
     def process_data(self):
-        #read file 
         with open(self.file_loc) as file:
             for line in file:
                 if 'ts' in line:
@@ -41,8 +35,13 @@ class Sensor:
                 row = line.strip().split(',')
                 data_points = []
                 for i, col in enumerate(self.columns[1:],1):
-                    print("col: " + col, i)
-                    data_points.append(DataPoint(float(row[i]), col))
+                   
+                    if "." in row[i] and "t" not in col:
+                        data_points.append(DataPoint(float(row[i]), col))
+                    elif "t" in col:
+                        data_points.append(DataPoint(int(float(row[i])*100), col))
+                    else:
+                        data_points.append(DataPoint(int(row[i]), col))
 
                 self.data.append(DataStamps(float(row[0]), data_points))
 
@@ -53,29 +52,49 @@ class Sensor:
                 print(point.values_name + ": " + str(point.value))
             print("")
 
-
-
-    def make_data_packet(self, time):
-        data_packet = self.name + str(time) + str(self.data[self.current_index].get_data())
+    def make_data_packet(self):
+        print(*self.data[self.current_index].get_data())
+        data_packet = struct.pack(self.struc, self.name.encode('ascii'), *self.data[self.current_index].get_data())
+        print("Data Packet for " + self.name + " : " + str(data_packet))
+        print("Data Packet Length: " + str(len(data_packet)))
         return data_packet
     
 def main():
-    uart = UART("UART data")
-    baro = Sensor("test/test_data/baro.csv", "baro", ["time", "temp", "pres"])
-    timer = -0.755
+    port = '/dev/tty.usbmodem21301'
+    baud = 115200
+    print(serial.__file__)
 
+    baro = Sensor("test/test_data/baro.csv", "b", ["time", "t", "p"], "<sii")
+    #baro = Sensor("test_data/baro.csv", "b", ["time", "t", "p"], "<sii")
+    #gnss = Sensor("test/test_data/gnssInfo.csv", "g", ["time", "t", "n"], "<sff")
+    #accel = Sensor("test/test_data/flightInfo.csv", "a", ["time", "h", "v", "a"], "<sfff")
+    timer = -0.755
+    start_time = time.time()
     sensors = [baro]
     for sensor in sensors:
         sensor.process_data()
-        sensor.print_data()
+        #sensor.print_data()
 
-    while timer < 112.5:
-        for sensor in sensors:
-            if sensor.data[sensor.current_index].get_time() == timer:
-                packet = sensor.make_data_packet(timer)
-                uart.send(packet)
-                sensor.current_index += 1
-        timer = round(timer + 0.005, 3)
+    with serial.Serial(port, baud, timeout=1) as ser:
+        print(time.time() - start_time, timer)
+        while timer < 112.5:
+            for sensor in sensors:
+                print("Sensor: " + sensor.name)
+                print("Current Index: " , sensor.data[sensor.current_index].get_time())
+                if sensor.data[sensor.current_index].get_time() == timer:
+                    packet = sensor.make_data_packet()
+                    ser.write(packet)
+                    sensor.current_index += 1
+
+                    time.sleep(0.1)
+                    response = ser.read_all().decode().strip()
+
+                    print("\nPico said: \n", response)
+            
+            timer = round(timer + 0.005, 3)
+            time.sleep(2)
     
 if __name__ == "__main__":
-    main()
+    print(serial.__file__)
+    print(serial.Serial)
+    main() 

@@ -5,6 +5,7 @@ file(GLOB SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/sensors/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/sensors/drivers/bmp390/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/sensors/drivers/bmp390/*.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/sensors/drivers/test_input/*.cpp
 )
 # Debugging: Print the collected sources
 message(STATUS "Collected sources: ${SOURCES}")

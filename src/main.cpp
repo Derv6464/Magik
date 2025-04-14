@@ -13,6 +13,12 @@
 #include "sensors/sensor_handler.h"
 #include "outputs/status_led.h"
 #include "tools/logger.h"
+#include "tools/interfaces.h"
+#include "sensors/config.h"
+
+#include "sensors/drivers/test_input/test_handler.h"
+#include "sensors/drivers/test_input/tester_core.h"
+#include "sensors/drivers/test_input/tester_sec.h"
 
 char *p = (char *)XIP_BASE;
 
@@ -38,9 +44,16 @@ char *p = (char *)XIP_BASE;
 #define buzzer 15
 
 //UART bus for GPS
+//#define tx_1 8
+//#define rx_1 9
+#define rst_gps 7
+
+#ifdef TESTING
+//UART bus for testing
 #define tx_1 8
 #define rx_1 9
-#define rst_gps 7
+
+#endif
 
 //Pyro channels
 #define pyro_en 6
@@ -76,17 +89,28 @@ void run_core_sensors(void* pvParameters) {
     handler->runSensors();  // This function contains an infinite loop
 }
 
+void run_test_hander(void* pvParameters) {
+    TestHandler* handler = static_cast<TestHandler*>(pvParameters);
+    while (true) {
+        handler->split_data();
+        vTaskDelay(pdMS_TO_TICKS(3000));
+    }
+}
+
+
 void print_core_sensor_data(void* pvParameters) {
     QueueHandle_t coreDataQueue = static_cast<QueueHandle_t>(pvParameters);
     core_flight_data data;
     
     while (true) {
         if (xQueueReceive(coreDataQueue, &data, portMAX_DELAY) == pdTRUE) {
-            printf("Time: %d, Altitude: %d, Velocity: %d\n", data.time, data.altitude, data.velocity);
+            printf("Time: %d, Pressure: %d\n", data.time, data.barometer.pressure);
             printf("Acceleration: X=%d, Y=%d, Z=%d\n", data.acceleration.x, data.acceleration.y, data.acceleration.z);
-            printf("Temperature: %d°C, BT Active: %d\n", data.temperature, data.bt_active);
+            printf("Temperature: %d°C, BT Active: %d\n", data.barometer.temperature, data.bt_active);
+        } else {
+            printf("Failed to receive data from queue\n");
         }
-        vTaskDelay(pdMS_TO_TICKS(3000));
+        vTaskDelay(pdMS_TO_TICKS(5000));
     }
 }
 
@@ -103,14 +127,21 @@ int main() {
     QueueHandle_t stateQueue = xQueueCreate(1, sizeof(int));
 
     printf("Starting...\n");
-    printf("SPI\n");
-    SPI spi_0(sck_1, mosi_1, miso_1, spi0);
-    printf("barometer\n");
-    Barometer barometer(&spi_0, cs_baro);
+    //SPI spi_0(sck_1, mosi_1, miso_1, spi0);
+    uart_inst_t* port = uart_get_instance(1);
+    UART uart_1(tx_1, rx_1, port, 115200, 11);
+    #ifdef TESTING
+    TestHandler testHandler(&uart_1);
+    printf("TestHandler created\n");
+    Barometer barometer(&testHandler); 
+    #endif
+    printf("UART created\n");
+    
+     // Barometer barometer(&uart_1, &name); 
     printf("snsor\n");
     Sensor<core_flight_data>* barometerSensor = barometer.getSensor();
     //IMU imu(&spi_0, cs_imu);
-   
+ 
     
     //UART uart(tx_1, rx_1);
     //GPS gps(&uart, rst_gps);
@@ -144,13 +175,19 @@ int main() {
     //init sensores
     StateMachine fsm(state_handlers);
     //xTaskCreate(run_task, "Flight_State_Task", 256, &fsm, 1, NULL);
-    xTaskCreate(run_core_sensors, "CoreSensorTask", 256, &core_sensors, 1, NULL);
-    xTaskCreate(print_core_sensor_data, "PrintSensorTask", 256, coreDataQueue, 1, NULL);
-    xTaskCreate(printRunning, "PrintTask", 256, NULL, 1, NULL);
+    //xTaskCreate(run_core_sensors, "CoreSensorTask", 256, &core_sensors, 1, NULL);
+    //xTaskCreate(print_core_sensor_data, "PrintSensorTask", 256, coreDataQueue, 1, NULL);
+    #ifdef TESTING
+    xTaskCreate(run_test_hander, "TestHandlerTask", 256, &testHandler, 1, NULL);
+    #endif
+    //xTaskCreate(printRunning, "PrintTask", 256, NULL, 1, NULL);
+
 
     vTaskStartScheduler();
 
-    while(1){
-        
+    while (1) {
+
+       
     };
+
 }

@@ -1,28 +1,31 @@
 #include "../../config.h"
 #ifdef TESTING
-#ifndef TEST_INPUT_H
-#define TEST_INPUT_H
-#include "bmp3_defs.h"
-#include "bmp3.h"
-#include "../../sensor.h"
-#include "../../../tools/interfaces.h"
-#include "../../data.h"
-#include <stdio.h>
+#include "tester_core.h"
 
-class Tester : public Sensor<core_flight_data> {
-    public:
-        Tester(SPI *spi, int cs);
-        void update(core_flight_data& data) override;
-    private:
-        SPI *spi;
-        int cs;
-        void read();
-        void process();
-        struct bmp3_dev baro;
-        struct bmp3_settings settings;
-        void bmp3_check_rslt(const char api_name[], int8_t rslt);
+Tester_Core::Tester_Core(TestHandler* handler, char name){
+    printf("Tester created with name %s\n", name);
+    this->name = name;
+    this-> hander = handler;
+    printf("Tester created\n");
 };
 
+void Tester_Core::update(core_flight_data& data){
 
-#endif // TEST_INPUT_H
+    switch (name) {
+        case 'b':
+            data.barometer.pressure = hander->last_baro_data.pressure;
+            data.barometer.temperature = hander->last_baro_data.temperature;
+            break;
+
+        case 'a':
+            data.acceleration.x = hander->last_accle_data.x;
+            data.acceleration.y = hander->last_accle_data.y;
+            data.acceleration.z = hander->last_accle_data.z;
+            break;
+
+        default:
+            printf("Unknown sensor type\n");
+    }
+};
+
 #endif

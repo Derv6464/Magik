@@ -1,28 +1,24 @@
 #include "../../config.h"
 #ifdef TESTING
-#ifndef TEST_INPUT_H
-#define TEST_INPUT_H
-#include "bmp3_defs.h"
-#include "bmp3.h"
+#ifndef TEST_INPUT_S_H
+#define TEST_INPUT_S_H
 #include "../../sensor.h"
 #include "../../../tools/interfaces.h"
 #include "../../data.h"
 #include <stdio.h>
+#include "test_handler.h"
 
-class Tester : public Sensor<seconda> {
+class Tester_Sec : public Sensor<secondary_flight_data> {
     public:
-        Tester(SPI *spi, int cs);
-        void update(core_flight_data& data) override;
+        Tester_Sec(TestHandler* handler, char name);
+        ~Tester_Sec() override { printf("Tester destroyed\n"); }
+        void update(secondary_flight_data& data) override;
     private:
-        SPI *spi;
-        int cs;
-        void read();
-        void process();
-        struct bmp3_dev baro;
-        struct bmp3_settings settings;
-        void bmp3_check_rslt(const char api_name[], int8_t rslt);
+        char name;
+        TestHandler* hander;
 };
 
 
-#endif // TEST_INPUT_H
+
+#endif // TEST_INPUT_S_H
 #endif

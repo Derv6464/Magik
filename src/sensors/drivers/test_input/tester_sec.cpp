@@ -1,21 +1,27 @@
 #include "../../config.h"
 #ifdef TESTING
-#ifndef TEST_INPUT_H
-#define TEST_INPUT_H
-#include "../../sensor.h"
-#include "../../../tools/interfaces.h"
-#include "../../data.h"
-#include <stdio.h>
+#include "tester_sec.h"
 
-class Tester : public Sensor<secondary_flight_data> {
-    public:
-        Tester(Serial *serial);
-        void update(secondary_flight_data& data) override;
-    private:
-        Serial *serial
-        void read();
+Tester_Sec::Tester_Sec(TestHandler* handler, char name){
+    printf("Tester created with name %s\n", name);
+    this->name = name;
+    this-> hander = handler;
+    printf("Tester created\n");
 };
 
+void Tester_Sec::update(secondary_flight_data& data){
+    switch (name) {
+        case 'g':
+            data.gps.latitude = hander->last_gps_data.latitude;
+            data.gps.longitude = hander->last_gps_data.longitude;
+            data.gps.altitude = hander->last_gps_data.altitude;
+            data.gps.velocity = hander->last_gps_data.velocity;
+            data.gps.satellites = hander->last_gps_data.satellites;
+            break;
 
-#endif // TEST_INPUT_H
+        default:
+            printf("Unknown sensor type\n");
+    }
+};
+
 #endif

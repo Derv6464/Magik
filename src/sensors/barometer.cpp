@@ -12,8 +12,14 @@ Barometer::Barometer(SPI *spi, int cs) {
 
     #ifdef BARO_BMP390
         printf("Barometer BMP390\n");
-        BMP390 baro(spi, cs);
-        barometer = &baro;
+        barometer = new BMP390(spi, cs);
+    #endif
+}
+
+Barometer::Barometer(TestHandler* handler){
+    #ifdef TESTING
+        printf("Barometer Tester\n");
+        barometer = new Tester_Core(handler, 'b');
     #endif
     printf("Barometer created\n");
 }
@@ -25,4 +31,3 @@ Barometer::~Barometer(){
     }
     printf("Barometer destroyed\n");
 }
-

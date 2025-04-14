@@ -89,3 +89,59 @@ void SPI_Device::read(uint8_t reg, uint8_t *buf, uint16_t len) {
 void SPI_Device::write(uint8_t reg, uint8_t *buf, uint16_t len) {
     spi->write(cs, reg, buf, len);
 }
+
+
+UART::UART(int tx, int rx, uart_inst_t* port, int baudrate, int packet_size) {
+    this->packet_size = packet_size;
+    this->tx = tx;
+    this->rx = rx;
+    this->port = port;
+    this->baudrate = baudrate;
+
+    setup();
+};
+
+void UART::setup() {
+    uart_init(port, baudrate);
+    gpio_set_function(tx, UART_FUNCSEL_NUM(port, tx));
+    gpio_set_function(rx, UART_FUNCSEL_NUM(port, rx));
+};
+
+void UART::write(char* data){
+     uart_puts(port, data);
+};
+
+void UART::read(char* buffer){
+    int bytesRead = 0;
+    
+    while (bytesRead < packet_size){
+        if (uart_is_readable_within_us(port, 100)){
+            printf("tyring to read\n");
+            buffer[bytesRead] = uart_getc(port);
+            bytesRead++;
+
+            printf("Byte %d: %02X\n", bytesRead, (unsigned char)buffer[bytesRead]);
+        }
+        //printf("Bytes read: %d\n", bytesRead);
+    }
+
+   // printf("UART read: %s\n", buffer);
+};
+
+void UART::read(char* buffer, int custom_packet_size){
+    int bytesRead = 0;
+    
+    while (bytesRead < custom_packet_size){
+        if (uart_is_readable_within_us(port, 100)){
+            printf("tyring to read\n");
+            buffer[bytesRead] = uart_getc(port);
+            bytesRead++;
+
+            printf("Bytes read: %d\n", buffer[bytesRead]);
+            printf("Bytes read: %d\n", bytesRead);
+        }
+        //printf("Bytes read: %d\n", bytesRead);
+    }
+
+   // printf("UART read: %s\n", buffer);
+};
