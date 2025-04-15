@@ -31,7 +31,11 @@ void TestHandler::split_data(){
             break;
 
         case 'a':
-            serial->read((char*)&last_accle_data, sizeof(accle_data));
+            char accle_buffer[12];
+            serial->read(accle_buffer, 12);
+            last_accle_data.x = *(int*)&last_accle_data.x;
+            last_accle_data.y = *(int*)&last_accle_data.y;
+            last_accle_data.z = *(int*)&last_accle_data.z;
             printf("Accelerometer data: %d %d %d\n", last_accle_data.x, last_accle_data.y, last_accle_data.z);
             break;
 

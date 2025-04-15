@@ -93,7 +93,7 @@ void run_test_hander(void* pvParameters) {
     TestHandler* handler = static_cast<TestHandler*>(pvParameters);
     while (true) {
         handler->split_data();
-        vTaskDelay(pdMS_TO_TICKS(3000));
+        vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
 
@@ -106,7 +106,7 @@ void print_core_sensor_data(void* pvParameters) {
         if (xQueueReceive(coreDataQueue, &data, portMAX_DELAY) == pdTRUE) {
             printf("Time: %d, Pressure: %d\n", data.time, data.barometer.pressure);
             printf("Acceleration: X=%d, Y=%d, Z=%d\n", data.acceleration.x, data.acceleration.y, data.acceleration.z);
-            printf("Temperature: %d°C, BT Active: %d\n", data.barometer.temperature, data.bt_active);
+            printf("Temperature: %f°C, BT Active: %d\n", data.barometer.temperature, data.bt_active);
         } else {
             printf("Failed to receive data from queue\n");
         }
@@ -175,10 +175,10 @@ int main() {
     //init sensores
     StateMachine fsm(state_handlers);
     //xTaskCreate(run_task, "Flight_State_Task", 256, &fsm, 1, NULL);
-    //xTaskCreate(run_core_sensors, "CoreSensorTask", 256, &core_sensors, 1, NULL);
-    //xTaskCreate(print_core_sensor_data, "PrintSensorTask", 256, coreDataQueue, 1, NULL);
+    xTaskCreate(run_core_sensors, "CoreSensorTask", 256, &core_sensors, 1, NULL);
+    xTaskCreate(print_core_sensor_data, "PrintSensorTask", 256, coreDataQueue, 1, NULL);
     #ifdef TESTING
-    xTaskCreate(run_test_hander, "TestHandlerTask", 256, &testHandler, 1, NULL);
+    xTaskCreate(run_test_hander, "TestHandlerTask", 256, &testHandler, 2, NULL);
     #endif
     //xTaskCreate(printRunning, "PrintTask", 256, NULL, 1, NULL);
 

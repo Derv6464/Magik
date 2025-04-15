@@ -66,16 +66,16 @@ def main():
 
     baro = Sensor("test/test_data/baro.csv", "b", ["time", "t", "p"], "<sii")
     #baro = Sensor("test_data/baro.csv", "b", ["time", "t", "p"], "<sii")
-    #gnss = Sensor("test/test_data/gnssInfo.csv", "g", ["time", "t", "n"], "<sff")
-    #accel = Sensor("test/test_data/flightInfo.csv", "a", ["time", "h", "v", "a"], "<sfff")
+    gnss = Sensor("test/test_data/gnssInfo.csv", "g", ["time", "t", "n"], "<sff")
+    accel = Sensor("test/test_data/flightInfo.csv", "a", ["time", "h", "v", "a"], "<sfff")
     timer = -0.755
     start_time = time.time()
-    sensors = [baro]
+    sensors = [baro, gnss, accel]
     for sensor in sensors:
         sensor.process_data()
         #sensor.print_data()
-
-    with serial.Serial(port, baud, timeout=1) as ser:
+    with open("test/data.txt", "w") as file:
+    #with serial.Serial(port, baud, timeout=1) as ser:
         print(time.time() - start_time, timer)
         while timer < 112.5:
             for sensor in sensors:
@@ -83,16 +83,15 @@ def main():
                 print("Current Index: " , sensor.data[sensor.current_index].get_time())
                 if sensor.data[sensor.current_index].get_time() == timer:
                     packet = sensor.make_data_packet()
-                    ser.write(packet)
+                    print(type(packet))
+                    file.write(str(timer) + " " + str(packet) + "\n")
+                    #ser.write(packet)
                     sensor.current_index += 1
+                    #response = ser.read_all().decode().strip()
 
-                    time.sleep(0.1)
-                    response = ser.read_all().decode().strip()
-
-                    print("\nPico said: \n", response)
+                    #print("\nPico said: \n", response)
             
             timer = round(timer + 0.005, 3)
-            time.sleep(2)
     
 if __name__ == "__main__":
     print(serial.__file__)
