@@ -40,6 +40,7 @@ class Sensor:
                         data_points.append(DataPoint(float(row[i]), col))
                     elif "t" in col:
                         data_points.append(DataPoint(int(float(row[i])*100), col))
+                        print("Time: " + str(int(float(row[i])*100)) + " temp")
                     else:
                         data_points.append(DataPoint(int(row[i]), col))
 
@@ -53,20 +54,17 @@ class Sensor:
             print("")
 
     def make_data_packet(self):
-        print(*self.data[self.current_index].get_data())
+        #print(*self.data[self.current_index].get_data())
         data_packet = struct.pack(self.struc, self.name.encode('ascii'), *self.data[self.current_index].get_data())
-        print("Data Packet for " + self.name + " : " + str(data_packet))
-        print("Data Packet Length: " + str(len(data_packet)))
+        #print("Data Packet for " + self.name + " : " + str(data_packet))
+        #print("Data Packet Length: " + str(len(data_packet)))
         return data_packet
     
 def main():
-    port = '/dev/tty.usbmodem21301'
-    baud = 115200
-    print(serial.__file__)
 
     baro = Sensor("test/test_data/baro.csv", "b", ["time", "t", "p"], "<sii")
     #baro = Sensor("test_data/baro.csv", "b", ["time", "t", "p"], "<sii")
-    gnss = Sensor("test/test_data/gnssInfo.csv", "g", ["time", "t", "n"], "<sff")
+    gnss = Sensor("test/test_data/gnssInfo.csv", "g", ["time", "a", "n"], "<sdd")
     accel = Sensor("test/test_data/flightInfo.csv", "a", ["time", "h", "v", "a"], "<sfff")
     timer = -0.755
     start_time = time.time()
@@ -76,14 +74,14 @@ def main():
         #sensor.print_data()
     with open("test/data.txt", "w") as file:
     #with serial.Serial(port, baud, timeout=1) as ser:
-        print(time.time() - start_time, timer)
+        #print(time.time() - start_time, timer)
         while timer < 112.5:
             for sensor in sensors:
-                print("Sensor: " + sensor.name)
-                print("Current Index: " , sensor.data[sensor.current_index].get_time())
+                #print("Sensor: " + sensor.name)
+                #print("Current Index: " , sensor.data[sensor.current_index].get_time())
                 if sensor.data[sensor.current_index].get_time() == timer:
                     packet = sensor.make_data_packet()
-                    print(type(packet))
+                    #print(type(packet))
                     file.write(str(timer) + " " + str(packet) + "\n")
                     #ser.write(packet)
                     sensor.current_index += 1

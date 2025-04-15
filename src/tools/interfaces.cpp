@@ -116,16 +116,10 @@ void UART::read(char* buffer){
     
     while (bytesRead < packet_size){
         if (uart_is_readable_within_us(port, 100)){
-            printf("tyring to read\n");
             buffer[bytesRead] = uart_getc(port);
             bytesRead++;
-
-            printf("Byte %d: %02X\n", bytesRead, (unsigned char)buffer[bytesRead]);
         }
-        //printf("Bytes read: %d\n", bytesRead);
     }
-
-   // printf("UART read: %s\n", buffer);
 };
 
 void UART::read(char* buffer, int custom_packet_size){
@@ -133,15 +127,8 @@ void UART::read(char* buffer, int custom_packet_size){
     
     while (bytesRead < custom_packet_size){
         if (uart_is_readable_within_us(port, 100)){
-            printf("tyring to read\n");
             buffer[bytesRead] = uart_getc(port);
             bytesRead++;
-
-            printf("Bytes read: %d\n", buffer[bytesRead]);
-            printf("Bytes read: %d\n", bytesRead);
         }
-        //printf("Bytes read: %d\n", bytesRead);
     }
-
-   // printf("UART read: %s\n", buffer);
 };

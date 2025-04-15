@@ -28,6 +28,14 @@ Accelerometer::Accelerometer(I2C *i2c, int addr) {
 
 }
 
+Accelerometer::Accelerometer(TestHandler* handler){
+    #ifdef TESTING
+        printf("Accelerometer Tester\n");
+        accelerometer = new Tester_Core(handler, 'a');
+    #endif
+    printf("Accelerometer created\n");
+}
+
 Accelerometer::~Accelerometer(){
     if (accelerometer != nullptr) {
         delete accelerometer;

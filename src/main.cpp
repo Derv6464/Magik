@@ -8,17 +8,24 @@
 #include <hardware/flash.h>
 
 #include "tools/state_machine.h"
-#include "sensors/data.h"
-#include "sensors/barometer.h"
-#include "sensors/sensor_handler.h"
-#include "outputs/status_led.h"
 #include "tools/logger.h"
 #include "tools/interfaces.h"
+
+#include "sensors/barometer.h"
+#include "sensors/accelerometer.h"
+#include "sensors/gps.h"
+
+#include "sensors/sensor_handler.h"
+#include "sensors/data.h"
 #include "sensors/config.h"
 
+#include "outputs/status_led.h"
+
+#ifdef TESTING
 #include "sensors/drivers/test_input/test_handler.h"
 #include "sensors/drivers/test_input/tester_core.h"
 #include "sensors/drivers/test_input/tester_sec.h"
+#endif
 
 char *p = (char *)XIP_BASE;
 
@@ -86,14 +93,20 @@ static void run_task(void* pvParameters) {
 void run_core_sensors(void* pvParameters) {
     printf("Core Sensor Task\n");
     SensorHandler<core_flight_data>* handler = static_cast<SensorHandler<core_flight_data>*>(pvParameters);
-    handler->runSensors();  // This function contains an infinite loop
+    handler->runSensors(); 
+}
+
+void run_secondary_sensors(void* pvParameters) {
+    printf("Secondary Sensor Task\n");
+    SensorHandler<secondary_flight_data>* handler = static_cast<SensorHandler<secondary_flight_data>*>(pvParameters);
+    handler->runSensors(); 
 }
 
 void run_test_hander(void* pvParameters) {
     TestHandler* handler = static_cast<TestHandler*>(pvParameters);
     while (true) {
         handler->split_data();
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        vTaskDelay(pdMS_TO_TICKS(1));
     }
 }
 
@@ -105,12 +118,28 @@ void print_core_sensor_data(void* pvParameters) {
     while (true) {
         if (xQueueReceive(coreDataQueue, &data, portMAX_DELAY) == pdTRUE) {
             printf("Time: %d, Pressure: %d\n", data.time, data.barometer.pressure);
-            printf("Acceleration: X=%d, Y=%d, Z=%d\n", data.acceleration.x, data.acceleration.y, data.acceleration.z);
+            printf("Acceleration: X=%f, Y=%f, Z=%f\n", data.acceleration.x, data.acceleration.y, data.acceleration.z);
             printf("Temperature: %f°C, BT Active: %d\n", data.barometer.temperature, data.bt_active);
+            printf("\n");
         } else {
-            printf("Failed to receive data from queue\n");
+            printf("Failed to receive data from core queue\n");
         }
-        vTaskDelay(pdMS_TO_TICKS(5000));
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
+}
+
+void print_secondary_sensor_data(void* pvParameters) {
+    QueueHandle_t secDataQueue = static_cast<QueueHandle_t>(pvParameters);
+    secondary_flight_data data;
+    
+    while (true) {
+        if (xQueueReceive(secDataQueue, &data, portMAX_DELAY) == pdTRUE) {
+            printf("GPS Latitude: %lf, Longitude: %lf\n", data.gps.latitude, data.gps.longitude);
+            printf("\n");
+        } else {
+            printf("Failed to receive data from secondary queue\n");
+        }
+        vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
 
@@ -132,28 +161,29 @@ int main() {
     UART uart_1(tx_1, rx_1, port, 115200, 11);
     #ifdef TESTING
     TestHandler testHandler(&uart_1);
-    printf("TestHandler created\n");
+  
     Barometer barometer(&testHandler); 
+    Accelerometer accelerometer(&testHandler);
+    GPS gps(&testHandler);
+    #else
+    SPI spi_1(sck_1, mosi_1, miso_1, spi0);
+    Barometer barometer(&spi_1, cs_baro);
+    Accelerometer accelerometer(&spi_1, cs_imu);
     #endif
+
     printf("UART created\n");
     
-     // Barometer barometer(&uart_1, &name); 
-    printf("snsor\n");
     Sensor<core_flight_data>* barometerSensor = barometer.getSensor();
-    //IMU imu(&spi_0, cs_imu);
- 
-    
-    //UART uart(tx_1, rx_1);
-    //GPS gps(&uart, rst_gps);
-
-    //I2C i2c(sda, scl);
-    //Accel accel(&i2c);
-
-    //SPI spi_1(sck_1, mosi_1, miso_1);
-    //Radio lora(&spi_1, cs_lora, rst_lora);
+    Sensor<core_flight_data>* accelerometerSensor = accelerometer.getSensor();
 
     SensorHandler<core_flight_data> core_sensors(coreDataQueue);
     core_sensors.addSensor(barometerSensor);
+    core_sensors.addSensor(accelerometerSensor);
+
+    Sensor<secondary_flight_data>* gpsSensor = gps.getSensor();
+
+    SensorHandler<secondary_flight_data> sec_sensors(secDataQueue);
+    sec_sensors.addSensor(gpsSensor);
 
 
     StateMachine::StateHandler state_handlers[] = {
@@ -175,10 +205,13 @@ int main() {
     //init sensores
     StateMachine fsm(state_handlers);
     //xTaskCreate(run_task, "Flight_State_Task", 256, &fsm, 1, NULL);
-    xTaskCreate(run_core_sensors, "CoreSensorTask", 256, &core_sensors, 1, NULL);
+    xTaskCreate(run_core_sensors, "CoreSensorTask", 256, &core_sensors, 2, NULL);
+    xTaskCreate(run_secondary_sensors, "SecondarySensorTask", 256, &sec_sensors, 2, NULL);
     xTaskCreate(print_core_sensor_data, "PrintSensorTask", 256, coreDataQueue, 1, NULL);
+    xTaskCreate(print_secondary_sensor_data, "PrintSensorTask", 256, secDataQueue, 1, NULL);
     #ifdef TESTING
-    xTaskCreate(run_test_hander, "TestHandlerTask", 256, &testHandler, 2, NULL);
+    xTaskCreate(run_test_hander, "TestHandlerTask", 256, &testHandler, 3, NULL);
+    
     #endif
     //xTaskCreate(printRunning, "PrintTask", 256, NULL, 1, NULL);
 

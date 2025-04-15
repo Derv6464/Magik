@@ -3,9 +3,9 @@
 
 struct accle_data
 {
-    int x;
-    int y;
-    int z;
+    float x;
+    float y;
+    float z;
 };
 
 struct gyro_data
@@ -32,8 +32,8 @@ struct core_flight_data
 
 struct gps_data
 {
-    float latitude;
-    float longitude;
+    double latitude;
+    double longitude;
     float altitude;
     float velocity;
     int satellites;

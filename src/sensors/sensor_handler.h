@@ -25,14 +25,19 @@ public:
         T data = {};  
 
         while (true) {
-            printf("reading data\n");
             for (auto sensor : sensors_) {
                 sensor->update(data);  // Each sensor updates the data struct
             }
+            processData(&data);  // Process the data if needed
 
             xQueueSend(data_queue_, &data, portMAX_DELAY);
             vTaskDelay(pdMS_TO_TICKS(2000));  // Prevent excessive CPU usage
         }
+    }
+
+    void processData(T* data) {
+       //printf("Processing data...\n");
+       return;
     }
 
 private:
