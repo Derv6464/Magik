@@ -16,7 +16,7 @@ void StateMachine::update_state(core_flight_data data){
     {
     case INIT:
         printf("init\n");
-        check_settings_state(data.setting_pin);
+        check_settings_state_done(data.setting_pin);
         break;
     case BLUETOOTH_SETTINGS:
         printf("bluetooth settings\n");
@@ -24,21 +24,27 @@ void StateMachine::update_state(core_flight_data data){
         break;
     case CALIBRATING:
         printf("calibrating\n");
+        check_calibrating_state_done();
         break;
     case READY:
         printf("ready\n");
+        check_ready_state_done(data.acceleration.x);
         break;
     case POWERED:
         printf("powered\n");
+        check_powered_state_done(data.acceleration.x);
         break;
     case COASTING:
         printf("coasting\n");
+        check_coasting_state_done(data.velocity);
         break;
     case DROUGE:
         printf("apogee, drouge\n");
+        check_drouge_state_done(data.barometer.pressure);
         break;
     case MAIN:
         printf("main\n");
+        check_drouge_state_done(data.barometer.pressure);
         break;
     case LANDED:
         printf("landed\n");
@@ -51,7 +57,7 @@ void StateMachine::update_state(core_flight_data data){
     return;
 }
 
-void StateMachine::check_settings_state(bool setting_pin){
+void StateMachine::check_settings_state_done(bool setting_pin){
     if (setting_pin){
         change_state(State::BLUETOOTH_SETTINGS);
     }
@@ -68,32 +74,38 @@ void StateMachine::check_bt_done(bool bt_active, bool setting_pin){
     return;
 }
 
-void StateMachine::check_calibrating_state(){
+void StateMachine::check_calibrating_state_done(){
     printf("State Machine\n");
 }
 
-void StateMachine::check_ready_state(){
-    printf("State Machine\n");
+void StateMachine::check_ready_state_done(float accel_x){
+    if (accel_x > 0.5f){
+        change_state(State::POWERED);
+    }
 }
 
-void StateMachine::check_powered_state(){
-    printf("State Machine\n");
+void StateMachine::check_powered_state_done(float accel_x){
+    if (accel_x < 0.5f){
+        change_state(State::COASTING);
+    }
 }
 
-void StateMachine::check_coasting_state(){
-    printf("State Machine\n");
+void StateMachine::check_coasting_state_done(float velocity){
+    if (velocity < 0.0f){
+        change_state(State::DROUGE);
+    }
 }
 
-void StateMachine::check_drouge_state(){
-    printf("State Machine\n");
+void StateMachine::check_drouge_state_done(float height){
+    if (height < 100.0f){ // add main var
+        change_state(State::MAIN);
+    }
 }
 
-void StateMachine::check_main_state(){
-    printf("State Machine\n");
-}
-
-void StateMachine::check_landed_state(){
-    printf("State Machine\n");
+void StateMachine::check_main_state_done(float velocity){
+    if (velocity < 0.0f){
+        change_state(State::LANDED);
+    }
 }
 
 void StateMachine::change_state(State new_state){

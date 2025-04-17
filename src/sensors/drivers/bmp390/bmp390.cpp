@@ -80,7 +80,7 @@ void BMP390::read(){
 
 }
 
-void BMP390::update(core_flight_data& data){
+void BMP390::update(baro_data& data){
     read();
     // Process altitude data
     

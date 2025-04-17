@@ -31,7 +31,7 @@ Accelerometer::Accelerometer(I2C *i2c, int addr) {
 Accelerometer::Accelerometer(TestHandler* handler){
     #ifdef TESTING
         printf("Accelerometer Tester\n");
-        accelerometer = new Tester_Core(handler, 'a');
+        accelerometer = new Tester_Accel(handler);
     #endif
     printf("Accelerometer created\n");
 }
@@ -44,3 +44,19 @@ Accelerometer::~Accelerometer(){
     printf("Accelerometer destroyed\n");
 }
 
+void Accelerometer::update(core_flight_data& data){
+    core_flight_data old_data = data;
+    accle_data accel_data;
+    accelerometer->update(accel_data);
+    data.acceleration.x = accel_data.x;
+    data.acceleration.y = accel_data.y;
+    data.acceleration.z = accel_data.z;
+    data.velocity = getVelocity(old_data.velocity, accel_data.x, old_data.time);
+}
+
+float Accelerometer::getVelocity(float last_velocity, float accel, float old_time) {
+    TickType_t currentTime = pdTICKS_TO_MS( xTaskGetTickCount() );
+    // v = u + at
+    return last_velocity + (accel * (currentTime - old_time)); 
+    
+}

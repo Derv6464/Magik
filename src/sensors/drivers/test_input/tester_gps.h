@@ -2,19 +2,18 @@
 #ifdef TESTING
 #ifndef TEST_INPUT_S_H
 #define TEST_INPUT_S_H
-#include "../../sensor.h"
+#include "../driver.h"
 #include "../../../tools/interfaces.h"
 #include "../../data.h"
 #include <stdio.h>
 #include "test_handler.h"
 
-class Tester_Sec : public Sensor<secondary_flight_data> {
+class Tester_Gps : public Driver<gps_data> {
     public:
-        Tester_Sec(TestHandler* handler, char name);
-        ~Tester_Sec() override { printf("Tester destroyed\n"); }
-        void update(secondary_flight_data& data) override;
+        Tester_Gps(TestHandler* handler);
+        ~Tester_Gps() override { printf("Tester destroyed\n"); }
+        void update(gps_data& data) override;
     private:
-        char name;
         TestHandler* hander;
 };
 

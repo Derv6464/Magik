@@ -23,8 +23,6 @@
 
 #ifdef TESTING
 #include "sensors/drivers/test_input/test_handler.h"
-#include "sensors/drivers/test_input/tester_core.h"
-#include "sensors/drivers/test_input/tester_sec.h"
 #endif
 
 char *p = (char *)XIP_BASE;
@@ -172,18 +170,13 @@ int main() {
     #endif
 
     printf("UART created\n");
-    
-    Sensor<core_flight_data>* barometerSensor = barometer.getSensor();
-    Sensor<core_flight_data>* accelerometerSensor = accelerometer.getSensor();
 
     SensorHandler<core_flight_data> core_sensors(coreDataQueue);
-    core_sensors.addSensor(barometerSensor);
-    core_sensors.addSensor(accelerometerSensor);
-
-    Sensor<secondary_flight_data>* gpsSensor = gps.getSensor();
+    core_sensors.addSensor(&barometer);
+    core_sensors.addSensor(&accelerometer);
 
     SensorHandler<secondary_flight_data> sec_sensors(secDataQueue);
-    sec_sensors.addSensor(gpsSensor);
+    sec_sensors.addSensor(&gps);
 
 
     StateMachine::StateHandler state_handlers[] = {

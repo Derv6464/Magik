@@ -11,7 +11,7 @@ GPS::GPS(UART *uart) {
 GPS::GPS(TestHandler* handler){
     #ifdef TESTING
         printf("GPS Tester\n");
-        gps = new Tester_Sec(handler, 'g');
+        gps = new Tester_Gps(handler);
     #endif
     printf("GPS created\n");
 }

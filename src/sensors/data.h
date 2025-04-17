@@ -19,13 +19,15 @@ struct baro_data
 {
     int pressure;
     float temperature;
+    float altitude;
 };
 
 struct core_flight_data
 {
-    int time;
+    TickType_t time;
     baro_data barometer;
     accle_data acceleration;
+    float velocity;
     bool setting_pin;
     bool bt_active;
 };
