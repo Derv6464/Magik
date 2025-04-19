@@ -14,12 +14,14 @@
 #include "sensors/barometer.h"
 #include "sensors/accelerometer.h"
 #include "sensors/gps.h"
-
 #include "sensors/sensor_handler.h"
 #include "sensors/data.h"
+
 #include "config.h"
 
 #include "outputs/status_led.h"
+#include "outputs/radio.h"
+#include "outputs/logger.h"
 
 #ifdef TESTING
 #include "drivers/test_input/test_handler.h"
@@ -90,6 +92,13 @@ struct StateMachineArgs {
     QueueHandle_t coreDataQueue;
 };
 
+struct TelemetryArgs {
+    QueueHandle_t coreDataQueue;
+    QueueHandle_t secDataQueue;
+    Radio* radio;
+    Logger* logger;
+};
+
 static void run_task(void* pvParameters) {
     printf("State Machine Task\n");
     StateMachineArgs* args = static_cast<StateMachineArgs*>(pvParameters);
@@ -115,7 +124,6 @@ void run_test_hander(void* pvParameters) {
         vTaskDelay(pdMS_TO_TICKS(100));
     }
 }
-
 
 void print_core_sensor_data(void* pvParameters) {
     QueueHandle_t coreDataQueue = static_cast<QueueHandle_t>(pvParameters);
@@ -148,6 +156,18 @@ void print_secondary_sensor_data(void* pvParameters) {
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
+
+void telemetry_task(void* pvParameters) {
+    QueueHandle_t coreDataQueue = static_cast<QueueHandle_t>(pvParameters);
+    core_flight_data data;
+    
+    while (true) {
+        if (xQueueReceive(coreDataQueue, &data, portMAX_DELAY) == pdTRUE) {
+            
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
+}
+};
 
 static void printRunning(void* pvParameters){
     while (1){
@@ -228,4 +248,4 @@ int main() {
        
     };
 
-}
+};

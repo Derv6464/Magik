@@ -2,7 +2,7 @@
 #define GPS_H
 
 #include "sensor.h"
-#include "drivers/driver.h"
+#include "../drivers/driver_in.h"
 #include "tools/interfaces.h"
 #include "data.h"
 #include "../config.h"
@@ -20,7 +20,7 @@ class GPS: public Sensor<secondary_flight_data> {
         ~GPS();
         void update(secondary_flight_data& data) override;
     private:
-        Driver<gps_data>* gps;
+        DriverIn<gps_data>* gps;
 };
 
 #endif // GPS_H

@@ -2,7 +2,7 @@
 #define ACCELEROMETER_H
 
 #include "sensor.h"
-#include "drivers/driver.h"
+#include "../drivers/driver_in.h"
 #include "tools/interfaces.h"
 #include "data.h"
 #include "../config.h"
@@ -21,7 +21,7 @@ class Accelerometer: public Sensor<core_flight_data> {
         ~Accelerometer();
         void update(core_flight_data& data) override;
     private:
-        Driver<accle_data>* accelerometer;
+        DriverIn<accle_data>* accelerometer;
         float getVelocity(float last_velocity, float accel, float time);
 };
 

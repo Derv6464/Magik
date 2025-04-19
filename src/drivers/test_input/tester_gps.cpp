@@ -4,7 +4,7 @@
 
 Tester_Gps::Tester_Gps(TestHandler* handler) {
     this-> hander = handler;
-    printf("Tester created\n");
+    printf("GPS Tester created\n");
 };
 
 void Tester_Gps::update(gps_data& data){
