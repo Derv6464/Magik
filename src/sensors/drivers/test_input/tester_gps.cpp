@@ -8,6 +8,7 @@ Tester_Gps::Tester_Gps(TestHandler* handler) {
 };
 
 void Tester_Gps::update(gps_data& data){
+    printf("Tester update\n");
     data.latitude = hander->last_gps_data.latitude;
     data.longitude = hander->last_gps_data.longitude;
 };

@@ -45,9 +45,11 @@ Accelerometer::~Accelerometer(){
 }
 
 void Accelerometer::update(core_flight_data& data){
+    //printf("Accelerometer update\n");
     core_flight_data old_data = data;
     accle_data accel_data;
     accelerometer->update(accel_data);
+    //printf("Accelerometer data from sensors: %f %f %f\n", accel_data.x, accel_data.y, accel_data.z);
     data.acceleration.x = accel_data.x;
     data.acceleration.y = accel_data.y;
     data.acceleration.z = accel_data.z;
@@ -55,7 +57,7 @@ void Accelerometer::update(core_flight_data& data){
 }
 
 float Accelerometer::getVelocity(float last_velocity, float accel, float old_time) {
-    TickType_t currentTime = pdTICKS_TO_MS( xTaskGetTickCount() );
+    int currentTime = to_ms_since_boot (get_absolute_time());
     // v = u + at
     return last_velocity + (accel * (currentTime - old_time)); 
     

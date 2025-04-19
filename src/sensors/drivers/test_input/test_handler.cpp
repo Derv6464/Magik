@@ -26,7 +26,7 @@ void TestHandler::split_data(){
             serial->read(baro_buffer, 8);
             last_baro_data.temperature = (*(int*)&baro_buffer[0])/100.00f;
             last_baro_data.pressure = *(int*)&baro_buffer[4];
-            //printf("Barometer data: %d %f\n", last_baro_data.pressure, last_baro_data.temperature);
+            //printf("Driver: Barometer data: %d %f\n", last_baro_data.pressure, last_baro_data.temperature);
             break;
 
         case 'a':
@@ -35,7 +35,7 @@ void TestHandler::split_data(){
             last_accle_data.x = *(float*)&accle_buffer[0];
             last_accle_data.y = *(float*)&accle_buffer[4];
             last_accle_data.z = *(float*)&accle_buffer[8];
-            //printf("Accelerometer data: %f %f %f\n", last_accle_data.x, last_accle_data.y, last_accle_data.z);
+            //printf("Driver: Accelerometer data: %f %f %f\n", last_accle_data.x, last_accle_data.y, last_accle_data.z);
             break;
 
         case 'g':
@@ -43,7 +43,7 @@ void TestHandler::split_data(){
             serial->read(gps_buffer, 16);
             last_gps_data.latitude = *(double*)&gps_buffer[0];
             last_gps_data.longitude = *(double*)&gps_buffer[8];
-            //printf("GPS data: %lf %lf \n", last_gps_data.latitude, last_gps_data.longitude);
+            //printf("Driver: GPS data: %lf %lf \n", last_gps_data.latitude, last_gps_data.longitude);
             break;
         
         default:

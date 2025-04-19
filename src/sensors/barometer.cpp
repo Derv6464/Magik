@@ -37,7 +37,7 @@ void Barometer::update(core_flight_data& data) {
     barometer->update(baro_data);
     data.barometer.pressure = baro_data.pressure;
     data.barometer.temperature = baro_data.temperature;
-    data.velocity = getAltitude(baro_data.pressure, baro_data.temperature);
+    data.velocity = getAltitude(baro_data.pressure);
 }
 
 float Barometer::getAltitude(float pressure) {

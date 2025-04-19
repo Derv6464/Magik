@@ -61,11 +61,10 @@ class Sensor:
         return data_packet
     
 def main():
-
     baro = Sensor("test/test_data/baro.csv", "b", ["time", "t", "p"], "<sii")
     #baro = Sensor("test_data/baro.csv", "b", ["time", "t", "p"], "<sii")
     gnss = Sensor("test/test_data/gnssInfo.csv", "g", ["time", "a", "n"], "<sdd")
-    accel = Sensor("test/test_data/flightInfo.csv", "a", ["time", "h", "v", "a"], "<sfff")
+    accel = Sensor("test/test_data/imu.csv", "a", ["time", "x", "y", "z"], "<sfff")
     timer = -0.755
     start_time = time.time()
     sensors = [baro, gnss, accel]

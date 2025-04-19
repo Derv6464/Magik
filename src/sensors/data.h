@@ -1,5 +1,6 @@
 #ifndef DATA_H
 #define DATA_H
+#include "FreeRTOS.h"
 
 struct accle_data
 {
@@ -24,7 +25,7 @@ struct baro_data
 
 struct core_flight_data
 {
-    TickType_t time;
+    int time;
     baro_data barometer;
     accle_data acceleration;
     float velocity;
@@ -50,6 +51,7 @@ struct imu_data
 
 struct secondary_flight_data
 {
+    int time;
     gps_data gps;
     accle_data acceleration;
     imu_data imu;

@@ -25,12 +25,14 @@ public:
         T data = {};  
 
         while (true) {
+            //printf("SensorHandler: Running\n");
+            data.time = to_ms_since_boot(get_absolute_time());
             for (auto sensor : sensors_) {
                 sensor->update(data);  // Each sensor updates the data struct
             }
 
             xQueueSend(data_queue_, &data, portMAX_DELAY);
-            vTaskDelay(pdMS_TO_TICKS(10));  // Prevent excessive CPU usage
+            vTaskDelay(pdMS_TO_TICKS(100));  // Prevent excessive CPU usage
         }
     }
 

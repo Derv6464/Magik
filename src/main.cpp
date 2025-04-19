@@ -76,16 +76,24 @@ void handle_calibrating() {
     printf("State: CALIBRATING\n"); 
 }
 void handle_ready() { printf("State: READY\n"); }
-void handle_powered() { printf("State: POWERED\n"); }
+void handle_powered() { 
+    printf("State: POWERED\n");
+    printf("unlcking pyro\n");
+ }
 void handle_coasting() { printf("State: COASTING\n"); }
 void handle_drouge() { printf("State: DROUGE\n"); }
 void handle_main() { printf("State: MAIN\n"); }
 void handle_landed() { printf("State: LANDED\n"); }
 
+struct StateMachineArgs {
+    StateMachine* fsm;
+    QueueHandle_t coreDataQueue;
+};
+
 static void run_task(void* pvParameters) {
     printf("State Machine Task\n");
-    StateMachine* fsm = static_cast<StateMachine*>(pvParameters);
-    fsm->run(pvParameters);
+    StateMachineArgs* args = static_cast<StateMachineArgs*>(pvParameters);
+    args->fsm->run(args->coreDataQueue);
 }
 
 void run_core_sensors(void* pvParameters) {
@@ -104,7 +112,7 @@ void run_test_hander(void* pvParameters) {
     TestHandler* handler = static_cast<TestHandler*>(pvParameters);
     while (true) {
         handler->split_data();
-        vTaskDelay(pdMS_TO_TICKS(1));
+        vTaskDelay(pdMS_TO_TICKS(100));
     }
 }
 
@@ -114,7 +122,7 @@ void print_core_sensor_data(void* pvParameters) {
     core_flight_data data;
     
     while (true) {
-        if (xQueueReceive(coreDataQueue, &data, portMAX_DELAY) == pdTRUE) {
+        if (xQueuePeek(coreDataQueue, &data, portMAX_DELAY) == pdTRUE) {
             printf("Time: %d, Pressure: %d\n", data.time, data.barometer.pressure);
             printf("Acceleration: X=%f, Y=%f, Z=%f\n", data.acceleration.x, data.acceleration.y, data.acceleration.z);
             printf("Temperature: %f°C, BT Active: %d\n", data.barometer.temperature, data.bt_active);
@@ -131,7 +139,7 @@ void print_secondary_sensor_data(void* pvParameters) {
     secondary_flight_data data;
     
     while (true) {
-        if (xQueueReceive(secDataQueue, &data, portMAX_DELAY) == pdTRUE) {
+        if (xQueuePeek(secDataQueue, &data, portMAX_DELAY) == pdTRUE) {
             printf("GPS Latitude: %lf, Longitude: %lf\n", data.gps.latitude, data.gps.longitude);
             printf("\n");
         } else {
@@ -178,7 +186,6 @@ int main() {
     SensorHandler<secondary_flight_data> sec_sensors(secDataQueue);
     sec_sensors.addSensor(&gps);
 
-
     StateMachine::StateHandler state_handlers[] = {
         handle_init,
         handle_bluetooth_settings,
@@ -191,19 +198,24 @@ int main() {
         handle_landed
     };
 
+    StateMachine* fsm = new StateMachine(state_handlers);
+
+    StateMachineArgs* fsmArgs = new StateMachineArgs{
+        .fsm = fsm,
+        .coreDataQueue = coreDataQueue
+    };
 
     //init state machine
     //init logger
     //init status led
     //init sensores
-    StateMachine fsm(state_handlers);
-    //xTaskCreate(run_task, "Flight_State_Task", 256, &fsm, 1, NULL);
-    xTaskCreate(run_core_sensors, "CoreSensorTask", 256, &core_sensors, 2, NULL);
-    xTaskCreate(run_secondary_sensors, "SecondarySensorTask", 256, &sec_sensors, 2, NULL);
-    xTaskCreate(print_core_sensor_data, "PrintSensorTask", 256, coreDataQueue, 1, NULL);
-    xTaskCreate(print_secondary_sensor_data, "PrintSensorTask", 256, secDataQueue, 1, NULL);
+    xTaskCreate(run_task, "Flight_State_Task", 512, fsmArgs, 3, NULL);
+    xTaskCreate(run_core_sensors, "CoreSensorTask", 512, &core_sensors, 3, NULL);
+    //xTaskCreate(run_secondary_sensors, "SecondarySensorTask", 256, &sec_sensors, 2, NULL);
+    //xTaskCreate(print_core_sensor_data, "PrintSensorTask", 512, coreDataQueue, 2, NULL);
+    //xTaskCreate(print_secondary_sensor_data, "PrintSensorTask", 512, secDataQueue, 1, NULL);
     #ifdef TESTING
-    xTaskCreate(run_test_hander, "TestHandlerTask", 256, &testHandler, 3, NULL);
+    xTaskCreate(run_test_hander, "TestHandlerTask", 512, &testHandler, 4, NULL);
     
     #endif
     //xTaskCreate(printRunning, "PrintTask", 256, NULL, 1, NULL);
