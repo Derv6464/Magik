@@ -22,6 +22,7 @@
 #include "outputs/status_led.h"
 #include "outputs/radio.h"
 #include "outputs/logger.h"
+#include "outputs/telemetry.h"
 
 #ifdef TESTING
 #include "drivers/test_input/test_handler.h"
@@ -92,30 +93,34 @@ struct StateMachineArgs {
     QueueHandle_t coreDataQueue;
 };
 
-struct TelemetryArgs {
-    QueueHandle_t coreDataQueue;
-    QueueHandle_t secDataQueue;
-    Radio* radio;
-    Logger* logger;
+struct TelemetryArgs{
+    Telemetry* telem;
+    TelemetryQueueArgs* queues; 
 };
 
 static void run_task(void* pvParameters) {
     printf("State Machine Task\n");
     StateMachineArgs* args = static_cast<StateMachineArgs*>(pvParameters);
     args->fsm->run(args->coreDataQueue);
-}
+};
+
+static void run_telem(void* pvParameters) {
+    printf("State Machine Task\n");
+    TelemetryArgs* args = static_cast<TelemetryArgs*>(pvParameters);
+    args->telem->run(args->queues);
+};
 
 void run_core_sensors(void* pvParameters) {
     printf("Core Sensor Task\n");
     SensorHandler<core_flight_data>* handler = static_cast<SensorHandler<core_flight_data>*>(pvParameters);
     handler->runSensors(); 
-}
+};
 
 void run_secondary_sensors(void* pvParameters) {
     printf("Secondary Sensor Task\n");
     SensorHandler<secondary_flight_data>* handler = static_cast<SensorHandler<secondary_flight_data>*>(pvParameters);
     handler->runSensors(); 
-}
+};
 
 void run_test_hander(void* pvParameters) {
     TestHandler* handler = static_cast<TestHandler*>(pvParameters);
@@ -123,7 +128,7 @@ void run_test_hander(void* pvParameters) {
         handler->split_data();
         vTaskDelay(pdMS_TO_TICKS(100));
     }
-}
+};
 
 void print_core_sensor_data(void* pvParameters) {
     QueueHandle_t coreDataQueue = static_cast<QueueHandle_t>(pvParameters);
@@ -157,17 +162,6 @@ void print_secondary_sensor_data(void* pvParameters) {
     }
 }
 
-void telemetry_task(void* pvParameters) {
-    QueueHandle_t coreDataQueue = static_cast<QueueHandle_t>(pvParameters);
-    core_flight_data data;
-    
-    while (true) {
-        if (xQueueReceive(coreDataQueue, &data, portMAX_DELAY) == pdTRUE) {
-            
-        vTaskDelay(pdMS_TO_TICKS(1000));
-    }
-}
-};
 
 static void printRunning(void* pvParameters){
     while (1){
@@ -191,6 +185,8 @@ int main() {
     Barometer barometer(&testHandler); 
     Accelerometer accelerometer(&testHandler);
     GPS gps(&testHandler);
+    Radio* radio = new Radio();
+    Logger* logger = new Logger();
     #else
     SPI spi_1(sck_1, mosi_1, miso_1, spi0);
     Barometer barometer(&spi_1, cs_baro);
@@ -198,7 +194,7 @@ int main() {
     #endif
 
     printf("UART created\n");
-
+    
     SensorHandler<core_flight_data> core_sensors(coreDataQueue);
     core_sensors.addSensor(&barometer);
     core_sensors.addSensor(&accelerometer);
@@ -225,21 +221,25 @@ int main() {
         .coreDataQueue = coreDataQueue
     };
 
-    //init state machine
-    //init logger
-    //init status led
-    //init sensores
+    Telemetry* telemetry = new Telemetry(radio, logger);
+    TelemetryQueueArgs* telemQueueArgs = new TelemetryQueueArgs{
+        .coreDataQueue = coreDataQueue,
+        .secDataQueue = secDataQueue
+    };
+
+    TelemetryArgs* telemArgs = new TelemetryArgs{
+        .telem = telemetry,
+        .queues = telemQueueArgs
+    };
+ 
     xTaskCreate(run_task, "Flight_State_Task", 512, fsmArgs, 3, NULL);
-    xTaskCreate(run_core_sensors, "CoreSensorTask", 512, &core_sensors, 3, NULL);
+    xTaskCreate(run_telem, "Telemetry Task", 512, telemArgs, 3, NULL);
+    xTaskCreate(run_core_sensors, "CoreSensorTask", 512, &core_sensors, 4, NULL);
     //xTaskCreate(run_secondary_sensors, "SecondarySensorTask", 256, &sec_sensors, 2, NULL);
-    //xTaskCreate(print_core_sensor_data, "PrintSensorTask", 512, coreDataQueue, 2, NULL);
-    //xTaskCreate(print_secondary_sensor_data, "PrintSensorTask", 512, secDataQueue, 1, NULL);
     #ifdef TESTING
     xTaskCreate(run_test_hander, "TestHandlerTask", 512, &testHandler, 4, NULL);
-    
     #endif
     //xTaskCreate(printRunning, "PrintTask", 256, NULL, 1, NULL);
-
 
     vTaskStartScheduler();
 

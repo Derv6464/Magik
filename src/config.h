@@ -6,6 +6,6 @@
 //#define RADIO_SX1278
 //#define LOG_SD
 
-#define LOG_FLASH
-#define LOG_FLASH_SIZE 1024*1024*2 // 2MB
+#define LOG_INTERNAL_FLASH
+#define LOG_FLASH_OFFSET 1024*512 // 512kB from start of mem 
 #define TESTING

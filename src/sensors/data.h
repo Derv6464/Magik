@@ -1,6 +1,7 @@
 #ifndef DATA_H
 #define DATA_H
 #include "FreeRTOS.h"
+#include "queue.h"
 
 struct accle_data
 {
@@ -62,6 +63,12 @@ struct flight_data
     core_flight_data core_data;
     secondary_flight_data secondary_data;
     int state;
+};
+
+
+struct TelemetryQueueArgs {
+    QueueHandle_t coreDataQueue;
+    QueueHandle_t secDataQueue;
 };
 
 #endif // DATA_H
