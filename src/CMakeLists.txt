@@ -3,9 +3,9 @@ file(GLOB SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/outputs/*.cpp  
     ${CMAKE_CURRENT_SOURCE_DIR}/tools/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/sensors/*.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/sensors/drivers/bmp390/*.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/sensors/drivers/bmp390/*.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/sensors/drivers/test_input/*.cpp
+    #${CMAKE_CURRENT_SOURCE_DIR}/drivers/bmp390/*.cpp
+    #${CMAKE_CURRENT_SOURCE_DIR}/drivers/bmp390/*.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/drivers/test_input/*.cpp
 )
 # Debugging: Print the collected sources
 message(STATUS "Collected sources: ${SOURCES}")

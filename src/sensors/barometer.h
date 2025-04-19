@@ -5,16 +5,16 @@
 #include "drivers/driver.h"
 #include "tools/interfaces.h"
 #include "data.h"
-#include "config.h"
+#include "../config.h"
 #include <stdio.h>
 #include <cmath>
 
 #ifdef BARO_BMP390
-#include "drivers/bmp390/bmp390.h"
+#include "../drivers/bmp390/bmp390.h"
 #endif
 #ifdef TESTING
-#include "drivers/test_input/tester_baro.h"
-#include "drivers/test_input/test_handler.h"
+#include "../drivers/test_input/tester_baro.h"
+#include "../drivers/test_input/test_handler.h"
 #endif
 
 class Barometer: public Sensor<core_flight_data> {

@@ -5,12 +5,12 @@
 #include "drivers/driver.h"
 #include "tools/interfaces.h"
 #include "data.h"
-#include "config.h"
+#include "../config.h"
 #include <stdio.h>
 
 #ifdef TESTING
-#include "drivers/test_input/tester_gps.h"
-#include "drivers/test_input/test_handler.h"
+#include "../drivers/test_input/tester_gps.h"
+#include "../drivers/test_input/test_handler.h"
 #endif
 
 class GPS: public Sensor<secondary_flight_data> {

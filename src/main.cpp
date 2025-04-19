@@ -17,12 +17,12 @@
 
 #include "sensors/sensor_handler.h"
 #include "sensors/data.h"
-#include "sensors/config.h"
+#include "config.h"
 
 #include "outputs/status_led.h"
 
 #ifdef TESTING
-#include "sensors/drivers/test_input/test_handler.h"
+#include "drivers/test_input/test_handler.h"
 #endif
 
 char *p = (char *)XIP_BASE;
