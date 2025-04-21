@@ -12,7 +12,7 @@ StateMachine::StateMachine(StateHandler handlers[]) {
 
 void StateMachine::update_state(core_flight_data data){
     //printf("State Machine\n");
-    printf("State: %d\n", current_state);
+    //printf("State: %d\n", current_state);
     //printf("Data: %d %d %f %f %f\n", data.time, data.barometer.pressure, data.acceleration.x, data.velocity, data.setting_pin);
     switch (current_state)
     {
@@ -29,7 +29,7 @@ void StateMachine::update_state(core_flight_data data){
         check_calibrating_state_done();
         break;
     case State::READY:
-        printf("ready\n");
+        //printf("ready\n");
         check_ready_state_done(data.acceleration.x, data.acceleration.y, data.acceleration.z);
         break;
     case State::POWERED:
@@ -54,8 +54,6 @@ void StateMachine::update_state(core_flight_data data){
     default:
         break;
     }
-
-    last_data = data;
     return;
 }
 
@@ -85,7 +83,7 @@ void StateMachine::check_calibrating_state_done(){
 void StateMachine::check_ready_state_done(float accel_x, float accel_y, float accel_z){
     float accel = (accel_x * accel_x) + (accel_y * accel_y) + (accel_z * accel_z);
     float threshold = 10;
-    printf("State Machine: Ready, accel: %f, threshold: %f", accel, threshold);
+    printf("State Machine: Ready, accel: %f, threshold: %f \n", accel, threshold);
     if (accel > threshold){
         change_state(State::POWERED);
     }
@@ -132,14 +130,27 @@ void StateMachine::change_state(State new_state){
 
 void StateMachine::run(void * pvParameters ){
     //printf("State Machine Task\n");
-    QueueHandle_t coreDataQueue = static_cast<QueueHandle_t>(pvParameters);
+    AllQueuesArgs* args = static_cast<AllQueuesArgs*>(pvParameters);
+    //redo this
+    QueueHandle_t coreDataQueue = args->coreDataQueue;
+    QueueHandle_t secDataQueue = args->secDataQueue;
+    QueueHandle_t flightDataQueue = args->flightDataQueue;
+    flight_data raw_data;
+    printf("State Machine Intialised\n");
     while (true){
 
-        core_flight_data data;
-        if (xQueueReceive(coreDataQueue, &data, portMAX_DELAY) == pdTRUE) {
-            update_state(data);
+        if (xQueueReceive(coreDataQueue, &raw_data.core_data,  pdMS_TO_TICKS(100)) == pdTRUE) {
+            //process data in kalman filter
+            update_state(raw_data.core_data);
         }
-        vTaskDelay(pdMS_TO_TICKS(500));
+        if (xQueueReceive(secDataQueue, &raw_data.secondary_data,  pdMS_TO_TICKS(100)) == pdTRUE) {
+            //process data in kalman filter
+            printf("secondary data recived\n");
+        }
+        raw_data.state = current_state;
+        xQueueSend(flightDataQueue, &raw_data, pdMS_TO_TICKS(100));
+
+        vTaskDelay(pdMS_TO_TICKS(read_data_delay));
     }
 }
 

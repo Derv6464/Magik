@@ -5,31 +5,31 @@
 
 struct accle_data
 {
-    float x;
-    float y;
-    float z;
+    float x{0};
+    float y{0};
+    float z{0};
 };
 
 struct gyro_data
 {
-    int x;
-    int y;
-    int z;
+    int x{0};
+    int y{0};
+    int z{0};
 };
 
 struct baro_data
 {
-    int pressure;
-    float temperature;
-    float altitude;
+    int pressure{0};
+    float temperature{0};
+    float altitude{0};
 };
 
 struct core_flight_data
 {
-    int time;
+    int time{0};
     baro_data barometer;
     accle_data acceleration;
-    float velocity;
+    float velocity{0};
     bool setting_pin;
     bool bt_active;
 };
@@ -56,6 +56,7 @@ struct secondary_flight_data
     gps_data gps;
     accle_data acceleration;
     imu_data imu;
+    float velocity{0};
 };
 
 struct flight_data
@@ -66,9 +67,10 @@ struct flight_data
 };
 
 
-struct TelemetryQueueArgs {
+struct AllQueuesArgs {
     QueueHandle_t coreDataQueue;
     QueueHandle_t secDataQueue;
+    QueueHandle_t flightDataQueue;
 };
 
 #endif // DATA_H

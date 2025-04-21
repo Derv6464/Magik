@@ -18,7 +18,7 @@ class GPS: public Sensor<secondary_flight_data> {
         GPS(UART *uart);
         GPS(TestHandler* handler);
         ~GPS();
-        void update(secondary_flight_data& data) override;
+        void update(secondary_flight_data* data) override;
     private:
         DriverIn<gps_data>* gps;
 };

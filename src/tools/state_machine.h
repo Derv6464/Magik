@@ -1,8 +1,8 @@
 #include "../sensors/data.h"
-#include "logger.h"
 #include "FreeRTOS.h"
 #include "task.h" 
 #include "queue.h"
+#include "../config.h"
 
 class StateMachine {
 public:
@@ -28,7 +28,6 @@ private:
     bool called_once[NUM_STATES];
     State current_state;
     
-    core_flight_data last_data;
     void update_state(core_flight_data data);
     void check_settings_state_done(bool setting_pin);
     void check_bt_done(bool bt_active, bool setting_pin);

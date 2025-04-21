@@ -8,6 +8,8 @@
 #include "../config.h"
 #include "FreeRTOS.h"
 #include <stdio.h>
+#include <cmath>
+
 #ifdef TESTING
 #include "../drivers/test_input/tester_accel.h"
 #include "../drivers/test_input/test_handler.h"
@@ -19,7 +21,7 @@ class Accelerometer: public Sensor<core_flight_data> {
         Accelerometer(I2C *i2c, int addr);
         Accelerometer(TestHandler* handler);
         ~Accelerometer();
-        void update(core_flight_data& data) override;
+        void update(core_flight_data* data) override;
     private:
         DriverIn<accle_data>* accelerometer;
         float getVelocity(float last_velocity, float accel, float time);

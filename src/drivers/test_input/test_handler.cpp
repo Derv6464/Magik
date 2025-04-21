@@ -18,7 +18,6 @@ TestHandler::~TestHandler(){
 void TestHandler::split_data(){
     char buffer;
     serial->read(&buffer, 1);
-
     //printf("Buffer: %c\n", buffer);
     switch (buffer){
         case 'b':

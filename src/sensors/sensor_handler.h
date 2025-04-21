@@ -21,18 +21,21 @@ public:
         sensors_.push_back(sensor);
     }
 
-    void runSensors() {
-        T data = {};  
-
+    void runSensors(T* data) {
+        //to do fix type so data initlalised as 0
+        printf("\nfrom handler: time %f",data->time);
+        printf("velocity %f\n",data->velocity);
         while (true) {
             //printf("SensorHandler: Running\n");
-            data.time = to_ms_since_boot(get_absolute_time());
+            
             for (auto sensor : sensors_) {
-                sensor->update(data);  // Each sensor updates the data struct
+                sensor->update(data); 
             }
 
-            xQueueSend(data_queue_, &data, portMAX_DELAY);
-            vTaskDelay(pdMS_TO_TICKS(100));  // Prevent excessive CPU usage
+            xQueueSend(data_queue_, data, pdMS_TO_TICKS(10));
+            data->time = to_ms_since_boot(get_absolute_time());
+            vTaskDelay(pdMS_TO_TICKS(read_data_delay)); 
+            
         }
     }
 

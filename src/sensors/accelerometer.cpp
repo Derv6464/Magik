@@ -44,21 +44,24 @@ Accelerometer::~Accelerometer(){
     printf("Accelerometer destroyed\n");
 }
 
-void Accelerometer::update(core_flight_data& data){
-    //printf("Accelerometer update\n");
-    core_flight_data old_data = data;
+void Accelerometer::update(core_flight_data* data){
+    printf("%f", data->velocity);
     accle_data accel_data;
     accelerometer->update(accel_data);
-    //printf("Accelerometer data from sensors: %f %f %f\n", accel_data.x, accel_data.y, accel_data.z);
-    data.acceleration.x = accel_data.x;
-    data.acceleration.y = accel_data.y;
-    data.acceleration.z = accel_data.z;
-    data.velocity = getVelocity(old_data.velocity, accel_data.x, old_data.time);
+
+    float currentTime = to_ms_since_boot(get_absolute_time());
+    
+    data->acceleration.x = accel_data.x;
+    data->acceleration.y = accel_data.y;
+    data->acceleration.z = accel_data.z;
+
+    data->velocity = getVelocity(data->velocity, accel_data.y, data->time);
+    data->time = currentTime;
 }
 
 float Accelerometer::getVelocity(float last_velocity, float accel, float old_time) {
-    int currentTime = to_ms_since_boot (get_absolute_time());
+    float currentTime = to_ms_since_boot (get_absolute_time());
+    float abs_accel = sqrtf((accel * accel));
     // v = u + at
-    return last_velocity + (accel * (currentTime - old_time)); 
-    
+    return last_velocity + (abs_accel * ((currentTime - old_time)/1000)); 
 }

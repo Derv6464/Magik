@@ -8,7 +8,6 @@
 #include <hardware/flash.h>
 
 #include "tools/state_machine.h"
-#include "tools/logger.h"
 #include "tools/interfaces.h"
 
 #include "sensors/barometer.h"
@@ -27,48 +26,6 @@
 #ifdef TESTING
 #include "drivers/test_input/test_handler.h"
 #endif
-
-char *p = (char *)XIP_BASE;
-
-//I2C bus for high g accelerometer
-#define sda 0
-#define scl 1
-
-//SPI bus for barometer and low g accelerometer/IMU
-#define sck_1 10
-#define mosi_1 11
-#define miso_1 12
-#define cs_baro 13
-#define cs_imu 5
-
-//SPI bus for LoRa
-#define sck_0 18
-#define mosi_0 19
-#define miso_0 16
-#define cs_lora 17
-#define rst_lora 20
-
-#define neopixel 14
-#define buzzer 15
-
-//UART bus for GPS
-//#define tx_1 8
-//#define rx_1 9
-#define rst_gps 7
-
-#ifdef TESTING
-//UART bus for testing
-#define tx_1 8
-#define rx_1 9
-
-#endif
-
-//Pyro channels
-#define pyro_en 6
-#define pyro_1 21
-#define pyro_2 22
-#define pyro_check_1 26
-#define pyro_check_2 27
 
 void handle_init() { printf("State: INIT\n"); }
 void handle_bluetooth_settings() {
@@ -90,43 +47,48 @@ void handle_landed() { printf("State: LANDED\n"); }
 
 struct StateMachineArgs {
     StateMachine* fsm;
-    QueueHandle_t coreDataQueue;
+    AllQueuesArgs* queues; 
 };
 
 struct TelemetryArgs{
     Telemetry* telem;
-    TelemetryQueueArgs* queues; 
+    QueueHandle_t flightDataQueue;
 };
 
 static void run_task(void* pvParameters) {
     printf("State Machine Task\n");
     StateMachineArgs* args = static_cast<StateMachineArgs*>(pvParameters);
-    args->fsm->run(args->coreDataQueue);
+    args->fsm->run(args->queues);
 };
 
 static void run_telem(void* pvParameters) {
     printf("State Machine Task\n");
     TelemetryArgs* args = static_cast<TelemetryArgs*>(pvParameters);
-    args->telem->run(args->queues);
+    args->telem->run(args->flightDataQueue);
 };
 
 void run_core_sensors(void* pvParameters) {
     printf("Core Sensor Task\n");
     SensorHandler<core_flight_data>* handler = static_cast<SensorHandler<core_flight_data>*>(pvParameters);
-    handler->runSensors(); 
+    core_flight_data data;
+    data.time = to_ms_since_boot(get_absolute_time());
+    data.velocity = 0;
+    printf("vel: %f\n", data.velocity);
+    handler->runSensors(&data); 
 };
 
 void run_secondary_sensors(void* pvParameters) {
     printf("Secondary Sensor Task\n");
     SensorHandler<secondary_flight_data>* handler = static_cast<SensorHandler<secondary_flight_data>*>(pvParameters);
-    handler->runSensors(); 
+    secondary_flight_data data;
+    handler->runSensors(&data); 
 };
 
 void run_test_hander(void* pvParameters) {
     TestHandler* handler = static_cast<TestHandler*>(pvParameters);
     while (true) {
         handler->split_data();
-        vTaskDelay(pdMS_TO_TICKS(100));
+        vTaskDelay(pdMS_TO_TICKS(read_data_delay));
     }
 };
 
@@ -169,13 +131,17 @@ static void printRunning(void* pvParameters){
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
+
 int main() {
     stdio_init_all();
     QueueHandle_t coreDataQueue = xQueueCreate(3, sizeof(core_flight_data));
     QueueHandle_t secDataQueue = xQueueCreate(3, sizeof(secondary_flight_data));
-    QueueHandle_t stateQueue = xQueueCreate(1, sizeof(int));
+    QueueHandle_t flightDataQueue = xQueueCreate(1, sizeof(flight_data));
 
     printf("Starting...\n");
+    printf("flightDataQueue: %d\n", sizeof(flight_data));
+    printf("coreDataQueue: %d\n", sizeof(core_flight_data));
+    printf("secDataQueue: %d\n", sizeof(secondary_flight_data));
     //SPI spi_0(sck_1, mosi_1, miso_1, spi0);
     uart_inst_t* port = uart_get_instance(1);
     UART uart_1(tx_1, rx_1, port, 115200, 11);
@@ -218,34 +184,32 @@ int main() {
 
     StateMachineArgs* fsmArgs = new StateMachineArgs{
         .fsm = fsm,
-        .coreDataQueue = coreDataQueue
+        .queues = new AllQueuesArgs{
+            .coreDataQueue = coreDataQueue,
+            .secDataQueue = secDataQueue,
+            .flightDataQueue = flightDataQueue
+        }
     };
 
     Telemetry* telemetry = new Telemetry(radio, logger);
-    TelemetryQueueArgs* telemQueueArgs = new TelemetryQueueArgs{
-        .coreDataQueue = coreDataQueue,
-        .secDataQueue = secDataQueue
-    };
 
     TelemetryArgs* telemArgs = new TelemetryArgs{
         .telem = telemetry,
-        .queues = telemQueueArgs
+        .flightDataQueue = flightDataQueue
     };
  
     xTaskCreate(run_task, "Flight_State_Task", 512, fsmArgs, 3, NULL);
-    xTaskCreate(run_telem, "Telemetry Task", 512, telemArgs, 3, NULL);
     xTaskCreate(run_core_sensors, "CoreSensorTask", 512, &core_sensors, 4, NULL);
     //xTaskCreate(run_secondary_sensors, "SecondarySensorTask", 256, &sec_sensors, 2, NULL);
     #ifdef TESTING
-    xTaskCreate(run_test_hander, "TestHandlerTask", 512, &testHandler, 4, NULL);
+    xTaskCreate(run_test_hander, "TestHandlerTask", 512, &testHandler, 5, NULL);
     #endif
     //xTaskCreate(printRunning, "PrintTask", 256, NULL, 1, NULL);
+    xTaskCreate(run_telem, "Telemetry Task", 512, telemArgs, 2, NULL);
 
     vTaskStartScheduler();
 
     while (1) {
-
-       
     };
 
 };

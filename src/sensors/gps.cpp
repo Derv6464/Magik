@@ -24,9 +24,9 @@ GPS::~GPS(){
     printf("GPS destroyed\n");
 }
 
-void GPS::update(secondary_flight_data& data) {
+void GPS::update(secondary_flight_data* data) {
     gps_data new_data;
     gps->update(new_data);
-    data.gps.latitude = new_data.latitude;
-    data.gps.longitude = new_data.longitude;
+    data->gps.latitude = new_data.latitude;
+    data->gps.longitude = new_data.longitude;
 }

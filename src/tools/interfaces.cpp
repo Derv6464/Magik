@@ -126,7 +126,7 @@ void UART::read(char* buffer, int custom_packet_size){
     int bytesRead = 0;
     
     while (bytesRead < custom_packet_size){
-        if (uart_is_readable_within_us(port, 100)){
+        if (uart_is_readable_within_us(port, 10)){
             buffer[bytesRead] = uart_getc(port);
             bytesRead++;
         }

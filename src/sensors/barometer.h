@@ -22,7 +22,7 @@ class Barometer: public Sensor<core_flight_data> {
         Barometer(SPI *spi, int cs);
         Barometer(TestHandler* handler);
         ~Barometer();
-        void update(core_flight_data& data) override;
+        void update(core_flight_data* data) override;
     private:
         DriverIn<baro_data>* barometer = nullptr;
         float getAltitude(float pressure);

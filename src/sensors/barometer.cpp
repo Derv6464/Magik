@@ -32,12 +32,12 @@ Barometer::~Barometer(){
     printf("Barometer destroyed\n");
 }
 
-void Barometer::update(core_flight_data& data) {
+void Barometer::update(core_flight_data* data) {
     baro_data baro_data;
     barometer->update(baro_data);
-    data.barometer.pressure = baro_data.pressure;
-    data.barometer.temperature = baro_data.temperature;
-    data.velocity = getAltitude(baro_data.pressure);
+    data->barometer.pressure = baro_data.pressure;
+    data->barometer.temperature = baro_data.temperature;
+    data->barometer.altitude = getAltitude(baro_data.pressure);
 }
 
 float Barometer::getAltitude(float pressure) {
