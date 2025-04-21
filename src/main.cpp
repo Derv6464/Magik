@@ -72,8 +72,6 @@ void run_core_sensors(void* pvParameters) {
     SensorHandler<core_flight_data>* handler = static_cast<SensorHandler<core_flight_data>*>(pvParameters);
     core_flight_data data;
     data.time = to_ms_since_boot(get_absolute_time());
-    data.velocity = 0;
-    printf("vel: %f\n", data.velocity);
     handler->runSensors(&data); 
 };
 

@@ -42,5 +42,6 @@ void Barometer::update(core_flight_data* data) {
 
 float Barometer::getAltitude(float pressure) {
     // Formula from BMP180 datasheet, given temp = 15C and sea level pressure = 1013.25hPa
+    //printf("Pressure: %d\n", pressure);
     return 44330.0 * (1.0 - pow(pressure / sea_level_pressure, 0.1903));
 }

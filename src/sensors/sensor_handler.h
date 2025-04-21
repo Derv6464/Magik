@@ -22,9 +22,6 @@ public:
     }
 
     void runSensors(T* data) {
-        //to do fix type so data initlalised as 0
-        printf("\nfrom handler: time %f",data->time);
-        printf("velocity %f\n",data->velocity);
         while (true) {
             //printf("SensorHandler: Running\n");
             

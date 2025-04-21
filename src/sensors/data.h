@@ -19,7 +19,7 @@ struct gyro_data
 
 struct baro_data
 {
-    int pressure{0};
+    int pressure{101325};
     float temperature{0};
     float altitude{0};
 };

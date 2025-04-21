@@ -45,7 +45,7 @@ Accelerometer::~Accelerometer(){
 }
 
 void Accelerometer::update(core_flight_data* data){
-    printf("%f", data->velocity);
+    //printf("velocity: %f\n", data->velocity);
     accle_data accel_data;
     accelerometer->update(accel_data);
 
@@ -61,7 +61,7 @@ void Accelerometer::update(core_flight_data* data){
 
 float Accelerometer::getVelocity(float last_velocity, float accel, float old_time) {
     float currentTime = to_ms_since_boot (get_absolute_time());
-    float abs_accel = sqrtf((accel * accel));
+    //float abs_accel = sqrtf((accel * accel));
     // v = u + at
-    return last_velocity + (abs_accel * ((currentTime - old_time)/1000)); 
+    return last_velocity + ((accel*-1) * ((currentTime - old_time)/1000)); 
 }

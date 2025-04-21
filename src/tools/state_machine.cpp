@@ -12,40 +12,34 @@ StateMachine::StateMachine(StateHandler handlers[]) {
 
 void StateMachine::update_state(core_flight_data data){
     //printf("State Machine\n");
-    //printf("State: %d\n", current_state);
+    printf("State: %d\n", current_state);
     //printf("Data: %d %d %f %f %f\n", data.time, data.barometer.pressure, data.acceleration.x, data.velocity, data.setting_pin);
+    printf("Velocity: %f\n", data.velocity);
+    printf("Altitude: %f\n", data.barometer.altitude);
     switch (current_state)
     {
     case State::INIT:
-        printf("init\n");
         check_settings_state_done(data.setting_pin);
         break;
     case State::BLUETOOTH_SETTINGS:
-        printf("bluetooth settings\n");
         check_bt_done(data.bt_active, data.setting_pin);
         break;
     case State::CALIBRATING:
-        printf("calibrating\n");
         check_calibrating_state_done();
         break;
     case State::READY:
-        //printf("ready\n");
         check_ready_state_done(data.acceleration.x, data.acceleration.y, data.acceleration.z);
         break;
     case State::POWERED:
-        printf("powered\n");
         check_powered_state_done(data.acceleration.x, data.acceleration.y, data.acceleration.z);
         break;
     case State::COASTING:
-        printf("coasting\n");
         check_coasting_state_done(data.velocity);
         break;
     case State::DROUGE:
-        printf("apogee, drouge\n");
         check_drouge_state_done(data.barometer.altitude);
         break;
     case State::MAIN:
-        printf("main\n");
         check_drouge_state_done(data.barometer.altitude);
         break;
     case State::LANDED:
@@ -68,9 +62,9 @@ void StateMachine::check_settings_state_done(bool setting_pin){
 }
 
 void StateMachine::check_bt_done(bool bt_active, bool setting_pin){
-    if (!bt_active && !setting_pin){
-        change_state(State::CALIBRATING);
-    }
+    //if (!bt_active && !setting_pin){
+    change_state(State::CALIBRATING);
+    //}
     return;
 }
 
