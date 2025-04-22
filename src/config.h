@@ -59,7 +59,7 @@
 
 #define bt_setting_pin 2
 
-#define read_data_delay 100 //ms 
+#define read_data_delay 1000 //ms 
 #define send_data_delay 5000 //ms
 
 namespace flight_settings {

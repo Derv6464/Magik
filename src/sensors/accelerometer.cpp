@@ -27,8 +27,7 @@ Accelerometer::Accelerometer(I2C *i2c, int addr) {
     #endif
     #ifdef ACCEL_MPU6050
         printf("Accelerometer MPU6050\n");
-        MPU6050 accel(i2c, addr);
-        accelerometer = &accel;
+        accelerometer = new MPU6050(i2c, addr);
     #endif
 
 }
@@ -62,6 +61,7 @@ void Accelerometer::update(core_flight_data* data){
     data->acceleration.y = accel_data.y;
     data->acceleration.z = accel_data.z;
 
+    printf("Accel: %f %f %f\n", data->acceleration.x, data->acceleration.y, data->acceleration.z);
     data->velocity = getVelocity(data->velocity, accel_data.z, data->time);
     data->time = currentTime;
 }

@@ -10,6 +10,7 @@
 #include "hardware/timer.h"
 #include "hardware/uart.h"
 #include "FreeRTOS.h"
+#include "task.h"
 
 #define READ_BIT 0x80
 
