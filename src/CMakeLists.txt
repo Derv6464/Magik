@@ -5,7 +5,9 @@ file(GLOB SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/sensors/*.cpp
     #${CMAKE_CURRENT_SOURCE_DIR}/drivers/bmp390/*.cpp
     #${CMAKE_CURRENT_SOURCE_DIR}/drivers/bmp390/*.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/drivers/test_input/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/drivers/MPU6050/*.cpp
+    #${CMAKE_CURRENT_SOURCE_DIR}/drivers/test_input/*.cpp
+
     ${CMAKE_CURRENT_SOURCE_DIR}/drivers/flash_internal/*.cpp
 )
 # Debugging: Print the collected sources
@@ -31,6 +33,7 @@ target_link_libraries(${ProjectName}
     hardware_flash 
     hardware_sync
     hardware_spi
+    hardware_i2c
     )
 
 pico_add_extra_outputs(${ProjectName})

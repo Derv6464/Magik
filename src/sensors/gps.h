@@ -16,7 +16,9 @@
 class GPS: public Sensor<secondary_flight_data> {
     public:
         GPS(UART *uart);
+        #ifdef TESTING
         GPS(TestHandler* handler);
+        #endif
         ~GPS();
         void update(secondary_flight_data* data) override;
     private:

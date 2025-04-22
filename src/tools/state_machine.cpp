@@ -130,9 +130,10 @@ void StateMachine::run(void * pvParameters ){
     QueueHandle_t secDataQueue = args->secDataQueue;
     QueueHandle_t flightDataQueue = args->flightDataQueue;
     flight_data raw_data;
+    flight_data old_data;
     printf("State Machine Intialised\n");
     while (true){
-
+        old_data = raw_data;
         if (xQueueReceive(coreDataQueue, &raw_data.core_data,  pdMS_TO_TICKS(100)) == pdTRUE) {
             //process data in kalman filter
             update_state(raw_data.core_data);
@@ -142,9 +143,9 @@ void StateMachine::run(void * pvParameters ){
             printf("secondary data recived\n");
         }
         raw_data.state = current_state;
+
         xQueueSend(flightDataQueue, &raw_data, pdMS_TO_TICKS(100));
 
         vTaskDelay(pdMS_TO_TICKS(read_data_delay));
     }
 }
-

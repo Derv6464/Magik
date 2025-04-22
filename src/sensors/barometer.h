@@ -20,7 +20,9 @@
 class Barometer: public Sensor<core_flight_data> {
     public:
         Barometer(SPI *spi, int cs);
+        #ifdef TESTING
         Barometer(TestHandler* handler);
+        #endif
         ~Barometer();
         void update(core_flight_data* data) override;
     private:

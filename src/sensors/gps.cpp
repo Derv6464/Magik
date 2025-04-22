@@ -8,13 +8,14 @@ GPS::GPS(UART *uart) {
     #endif
 }
 
+#ifdef TESTING
 GPS::GPS(TestHandler* handler){
-    #ifdef TESTING
-        printf("GPS Tester\n");
-        gps = new Tester_Gps(handler);
-    #endif
+    printf("GPS Tester\n");
+    gps = new Tester_Gps(handler);
+   
     printf("GPS created\n");
 }
+#endif
 
 GPS::~GPS(){
     if (gps != nullptr) {

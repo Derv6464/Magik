@@ -1,6 +1,5 @@
 #include "test_handler.h"
 
-
 TestHandler::TestHandler(UART* serial){
     printf("TestHandler created\n");
     this->serial = serial;

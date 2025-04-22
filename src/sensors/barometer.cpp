@@ -16,13 +16,15 @@ Barometer::Barometer(SPI *spi, int cs) {
     #endif
 }
 
+#ifdef TESTING
 Barometer::Barometer(TestHandler* handler){
-    #ifdef TESTING
+   
         printf("Barometer Tester\n");
         barometer = new Tester_Baro(handler);
-    #endif
+    
     printf("Barometer created\n");
 }
+#endif
 
 Barometer::~Barometer(){
     if (barometer != nullptr) {

@@ -2,18 +2,24 @@
 //#define BARO_BMP390
 //#define ACCEL_LSM6DS3
 //#define ACCEL_ADXL345
+#define ACCEL_MPU6050
 //#define GPS_MAXM10S
 //#define RADIO_SX1278
 //#define LOG_SD
 
 #define LOG_INTERNAL_FLASH
-#define LOG_FLASH_OFFSET 1024*512 // 512kB from start of mem 
-#define TESTING
+#define LOG_FLASH_OFFSET 1024*1024 
+#define LOG_FLASH_SETTINGS_OFFSET 1024*512 
+//#define TESTING
 
 
 //I2C bus for high g accelerometer
-//#define sda 0
-//#define scl 1
+//#define sda_0 0
+//#define scl_0 1
+
+//I2C bus for accelerometer
+#define sda_0 4
+#define scl_0 5
 
 //SPI bus for barometer and low g accelerometer/IMU
 #define sck_1 10
@@ -50,6 +56,8 @@
 #define pyro_2 22
 #define pyro_check_1 26
 #define pyro_check_2 27
+
+#define bt_setting_pin 2
 
 #define read_data_delay 100 //ms 
 #define send_data_delay 5000 //ms

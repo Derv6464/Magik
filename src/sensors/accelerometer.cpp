@@ -25,16 +25,23 @@ Accelerometer::Accelerometer(I2C *i2c, int addr) {
         //ADXL345 accel(i2c, addr);
         //accelerometer = &accel;
     #endif
+    #ifdef ACCEL_MPU6050
+        printf("Accelerometer MPU6050\n");
+        MPU6050 accel(i2c, addr);
+        accelerometer = &accel;
+    #endif
 
 }
 
+#ifdef TESTING
 Accelerometer::Accelerometer(TestHandler* handler){
-    #ifdef TESTING
+    
         printf("Accelerometer Tester\n");
         accelerometer = new Tester_Accel(handler);
-    #endif
+    
     printf("Accelerometer created\n");
 }
+#endif
 
 Accelerometer::~Accelerometer(){
     if (accelerometer != nullptr) {
@@ -55,7 +62,7 @@ void Accelerometer::update(core_flight_data* data){
     data->acceleration.y = accel_data.y;
     data->acceleration.z = accel_data.z;
 
-    data->velocity = getVelocity(data->velocity, accel_data.y, data->time);
+    data->velocity = getVelocity(data->velocity, accel_data.z, data->time);
     data->time = currentTime;
 }
 

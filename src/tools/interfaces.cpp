@@ -19,10 +19,6 @@ void SPI::setup() {
 }
 
 void SPI::read(int cs, uint8_t reg, uint8_t *buf, uint16_t len) {
-    // For this particular device, we send the device the register we want to read
-    // first, then subsequently read from the device. The register is auto incrementing
-    // so we don't need to keep sending the register we want, just the first.
-
     reg |= READ_BIT;
     cs_select(cs);
     spi_write_blocking(port, &reg, 1);
@@ -33,10 +29,6 @@ void SPI::read(int cs, uint8_t reg, uint8_t *buf, uint16_t len) {
 }
 
 void SPI::write(int cs, uint8_t reg, uint8_t *buf, uint16_t len) {
-    // For this particular device, we send the device the register we want to read
-    // first, then subsequently read from the device. The register is auto incrementing
-    // so we don't need to keep sending the register we want, just the first.
-
     reg |= READ_BIT;
     cs_select(cs);
     spi_write_blocking(port, &reg, 1);
@@ -46,8 +38,6 @@ void SPI::write(int cs, uint8_t reg, uint8_t *buf, uint16_t len) {
 }
 
 void SPI::read_no_cs(uint8_t reg, uint8_t *buf, uint16_t len) {
-    
-
     printf("read_no_cs reg: %02x\n", reg);
     reg |= READ_BIT;
     printf("read_no_cs reg: %02x\n", reg);
@@ -90,6 +80,30 @@ void SPI_Device::write(uint8_t reg, uint8_t *buf, uint16_t len) {
     spi->write(cs, reg, buf, len);
 }
 
+I2C::I2C(int sda, int scl, i2c_inst_t* port) {
+    this->sda = sda;
+    this->scl = scl;
+    this->port = port;
+    setup();
+};
+
+void I2C::setup() {
+    i2c_init(port, 100 * 1000);
+    gpio_set_function(sda, GPIO_FUNC_I2C);
+    gpio_set_function(scl, GPIO_FUNC_I2C);
+    gpio_pull_up(sda);
+    gpio_pull_up(scl);
+    // Make the I2C pins available to picotool
+    bi_decl(bi_2pins_with_func(sda, scl, GPIO_FUNC_I2C));
+};
+
+void I2C::write(int addr, uint8_t* data, int len){
+    i2c_write_blocking(i2c_default, addr, data, len, false); 
+};
+void I2C::read(int addr, uint8_t data, uint8_t* buf, int len) {
+    i2c_write_blocking(i2c_default, addr, &data, 1, true);
+    i2c_read_blocking(i2c_default, addr, buf, len, false);
+};
 
 UART::UART(int tx, int rx, uart_inst_t* port, int baudrate, int packet_size) {
     this->packet_size = packet_size;

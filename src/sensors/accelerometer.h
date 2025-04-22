@@ -15,11 +15,17 @@
 #include "../drivers/test_input/test_handler.h"
 #endif
 
+#ifdef ACCEL_MPU6050
+#include "../drivers/mpu6050/mpu6050.h"
+#endif
+
 class Accelerometer: public Sensor<core_flight_data> {
     public:
         Accelerometer(SPI *spi, int cs);
         Accelerometer(I2C *i2c, int addr);
+        #ifdef TESTING
         Accelerometer(TestHandler* handler);
+        #endif
         ~Accelerometer();
         void update(core_flight_data* data) override;
     private:

@@ -6,6 +6,7 @@
 #include "pico/stdlib.h"
 #include "pico/binary_info.h"
 #include "hardware/spi.h"
+#include "hardware/i2c.h"
 #include "hardware/timer.h"
 #include "hardware/uart.h"
 #include "FreeRTOS.h"
@@ -46,14 +47,13 @@ class SPI_Device{
 
 class I2C{
     public:
-        I2C(int sda, int scl){
-            this->sda = sda;
-            this->scl = scl;
-        };
-        void write(int data);
-        int read();
+        I2C(int sda, int scl, i2c_inst_t* port);
+        void write(int addr, uint8_t* data, int len);
+        void read(int addr, uint8_t data, uint8_t* buf, int len);
 
     private:
+        void setup();
+        i2c_inst_t* port;
         int sda;
         int scl;
 };
