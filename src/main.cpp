@@ -27,6 +27,9 @@
 #include "drivers/test_input/test_handler.h"
 #endif
 
+#include <Eigen/Dense>
+ 
+using Eigen::MatrixXd;
 
 void handle_init() { printf("State: INIT\n"); }
 void handle_bluetooth_settings() {
@@ -229,6 +232,7 @@ int main() {
     stdio_init_all();
     
 
+
     gpio_init(bt_setting_pin);
     gpio_set_dir(bt_setting_pin, GPIO_IN);
     gpio_pull_up(bt_setting_pin);
@@ -236,12 +240,12 @@ int main() {
     Status_led status_led(neopixel);
     status_led.set_color(Status_led::Color::RED);
 
-    if (!gpio_get(bt_setting_pin)) {  
-        printf("Running settings\n");
-        run_settings(&status_led);
-    } else {
-        printf("Running flight\n");
-        run_flight(&status_led);
-    }
+    //if (!gpio_get(bt_setting_pin)) {  
+    //    printf("Running settings\n");
+    //    run_settings(&status_led);
+    //} else {
+    //    printf("Running flight\n");
+    //    run_flight(&status_led);
+    //}
 
 };
