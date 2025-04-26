@@ -27,6 +27,10 @@
 #include "drivers/test_input/test_handler.h"
 #endif
 
+#include <Eigen/Dense>
+ 
+using Eigen::MatrixXd;
+
 void handle_init() { printf("State: INIT\n"); }
 void handle_bluetooth_settings() {
     //start bt settings server
@@ -146,13 +150,13 @@ void run_flight(Status_led* status_led){
     //spi_inst_t* spi_port = spi_get_in
     i2c_inst_t* i2c_port = i2c_get_instance(0);
 
-    //UART uart_1(tx_1, rx_1, port, 115200, 11);
     #ifdef TESTING
+    UART uart_1(tx_1, rx_1, port, 115200, 11);
     TestHandler testHandler(&uart_1);
   
     Barometer barometer(&testHandler); 
     Accelerometer accelerometer(&testHandler);
-    GPS gps(&testHandler);
+    //GPS gps(&testHandler);
     Radio* radio = new Radio();
     Logger* logger = new Logger();
     #else
@@ -163,14 +167,10 @@ void run_flight(Status_led* status_led){
     Accelerometer accelerometer(&i2c_0, mpu);
     #endif
 
-    core_flight_data data_in;
-    accelerometer.update(&data_in);
-    printf("Accelerometer data: %d %d %d\n", data_in.acceleration.x, data_in.acceleration.y, data_in.acceleration.z);
-
     printf("UART created\n");
     
     SensorHandler<core_flight_data> core_sensors(coreDataQueue);
-    //core_sensors.addSensor(&barometer);
+    core_sensors.addSensor(&barometer);
     core_sensors.addSensor(&accelerometer);
 
     //SensorHandler<secondary_flight_data> sec_sensors(secDataQueue);
@@ -199,21 +199,21 @@ void run_flight(Status_led* status_led){
         }
     };
 
-    //Telemetry* telemetry = new Telemetry(radio, logger);
-
-    //TelemetryArgs* telemArgs = new TelemetryArgs{
-    //    .telem = telemetry,
-    //    .flightDataQueue = flightDataQueue
-    //};
+    Telemetry* telemetry = new Telemetry(radio, logger);
+//
+    TelemetryArgs* telemArgs = new TelemetryArgs{
+        .telem = telemetry,
+        .flightDataQueue = flightDataQueue
+    };
  
-    //xTaskCreate(run_task, "Flight_State_Task", 512, fsmArgs, 3, NULL);
+    xTaskCreate(run_task, "Flight_State_Task", 512, fsmArgs, 3, NULL);
     xTaskCreate(run_core_sensors, "CoreSensorTask", 512, &core_sensors, 4, NULL);
     //xTaskCreate(run_secondary_sensors, "SecondarySensorTask", 256, &sec_sensors, 2, NULL);
     #ifdef TESTING
     xTaskCreate(run_test_hander, "TestHandlerTask", 512, &testHandler, 5, NULL);
     #endif
     //xTaskCreate(printRunning, "PrintTask", 256, NULL, 3, NULL);
-    //xTaskCreate(run_telem, "Telemetry Task", 512, telemArgs, 2, NULL);
+    xTaskCreate(run_telem, "Telemetry Task", 512, telemArgs, 2, NULL);
 
     vTaskStartScheduler();
 
@@ -229,7 +229,7 @@ void run_settings(Status_led* status_led){
 
 int main() {
     stdio_init_all();
-
+    
     gpio_init(bt_setting_pin);
     gpio_set_dir(bt_setting_pin, GPIO_IN);
     gpio_pull_up(bt_setting_pin);

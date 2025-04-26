@@ -21,6 +21,7 @@ SET(ProjectName Magik)
 
 # Set any variables required for importing libraries
 SET(FREERTOS_KERNEL_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/FreeRTOS-Kernel)
+SET(EIGEN_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/eigen)
 
 # Import those libraries
 include(pico_sdk_import.cmake)

@@ -3,6 +3,7 @@
 #include "task.h" 
 #include "queue.h"
 #include "../config.h"
+#include "kalman_filter.h"
 
 class StateMachine {
 public:
@@ -23,6 +24,7 @@ public:
     StateMachine(StateHandler handlers[]);
     void run(void * pvParameters );
 
+    KalmanFilter kalman_filter;
 private:
     StateHandler state_handlers[NUM_STATES];
     bool called_once[NUM_STATES];

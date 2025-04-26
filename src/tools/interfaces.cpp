@@ -99,10 +99,15 @@ void I2C::setup() {
 
 void I2C::write(int addr, uint8_t* data, int len){
     i2c_write_blocking(i2c_default, addr, data, len, false); 
+    //sleep_ms(10); doesnt work in debug
+    printf("bla bla bla\n");  //killin time cause debug hates sleep
+
 };
+
 void I2C::read(int addr, uint8_t data, uint8_t* buf, int len) {
     i2c_write_blocking(i2c_default, addr, &data, 1, true);
     i2c_read_blocking(i2c_default, addr, buf, len, false);
+    printf("\n");  //killin time cause debug hates sleep
 };
 
 UART::UART(int tx, int rx, uart_inst_t* port, int baudrate, int packet_size) {

@@ -6,7 +6,7 @@ file(GLOB SOURCES
     #${CMAKE_CURRENT_SOURCE_DIR}/drivers/bmp390/*.cpp
     #${CMAKE_CURRENT_SOURCE_DIR}/drivers/bmp390/*.c
     ${CMAKE_CURRENT_SOURCE_DIR}/drivers/MPU6050/*.cpp
-    #${CMAKE_CURRENT_SOURCE_DIR}/drivers/test_input/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/drivers/test_input/*.cpp
 
     ${CMAKE_CURRENT_SOURCE_DIR}/drivers/flash_internal/*.cpp
 )
@@ -17,7 +17,9 @@ add_executable(${ProjectName} ${SOURCES})
 
 target_include_directories(${ProjectName} PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}
+    ${EIGEN_PATH}      
 )
+
 set_target_properties(${ProjectName} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
 )

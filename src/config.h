@@ -2,7 +2,7 @@
 //#define BARO_BMP390
 //#define ACCEL_LSM6DS3
 //#define ACCEL_ADXL345
-#define ACCEL_MPU6050
+//#define ACCEL_MPU6050
 //#define GPS_MAXM10S
 //#define RADIO_SX1278
 //#define LOG_SD
@@ -10,8 +10,8 @@
 #define LOG_INTERNAL_FLASH
 #define LOG_FLASH_OFFSET 1024*1024 
 #define LOG_FLASH_SETTINGS_OFFSET 1024*512 
-//#define TESTING
 
+#define TESTING
 
 //I2C bus for high g accelerometer
 //#define sda_0 0
