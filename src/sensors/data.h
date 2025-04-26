@@ -24,11 +24,19 @@ struct baro_data
     float altitude{0};
 };
 
+struct prediction_data
+{
+    float position{0};
+    float velocity{0};
+    float acceleration{0};
+};
+
 struct core_flight_data
 {
     int time{0};
     baro_data barometer;
     accle_data acceleration;
+    prediction_data prediction;
     float velocity{0};
     bool setting_pin;
     bool bt_active;

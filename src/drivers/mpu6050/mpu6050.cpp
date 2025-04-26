@@ -1,3 +1,5 @@
+#include "../../config.h"
+#ifdef ACCEL_MPU6050
 #include "mpu6050.h"
 
 MPU6050::MPU6050(I2C *i2c, int addr){
@@ -84,3 +86,4 @@ void MPU6050::update_range(){
     accel_range = (mpu6050_accel_range_t)((buf[0] >> 3) & 0x03);
     printf("MPU6050 range: %d\n", accel_range);
 }
+#endif

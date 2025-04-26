@@ -57,11 +57,11 @@ void Accelerometer::update(core_flight_data* data){
 
     float currentTime = to_ms_since_boot(get_absolute_time());
     
-    data->acceleration.x = accel_data.x;
+    data->acceleration.x = accel_data.x * -1.0f; // Invert x axis
     data->acceleration.y = accel_data.y;
     data->acceleration.z = accel_data.z;
 
-    printf("Accel: %f %f %f\n", data->acceleration.x, data->acceleration.y, data->acceleration.z);
+    //printf("Accel: %f %f %f\n", data->acceleration.x, data->acceleration.y, data->acceleration.z);
     data->velocity = getVelocity(data->velocity, accel_data.z, data->time);
     data->time = currentTime;
 }
