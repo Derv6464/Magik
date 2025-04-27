@@ -138,10 +138,7 @@ void StateMachine::run(void * pvParameters ){
         int time_diff = raw_data.core_data.time - old_data.core_data.time;
         if (xQueueReceive(coreDataQueue, &raw_data.core_data,  pdMS_TO_TICKS(100)) == pdTRUE) {
             //process data in kalman filter
-            kalman_filter.predict(time_diff);
-            kalman_filter.update(raw_data.core_data.barometer.altitude, raw_data.core_data.acceleration.x); //x axis for test data
-            kalman_filter.update_values(&raw_data.core_data.prediction);
-            update_state(raw_data.core_data);
+
             printf("Got raw\n Got alt %f", raw_data.core_data.barometer.altitude);
             printf(" Got velocity %f", raw_data.core_data.velocity);
             printf(" Got accel %f\n", raw_data.core_data.acceleration.x);
@@ -151,6 +148,12 @@ void StateMachine::run(void * pvParameters ){
             //adds to queue, prob better way to do this
             printf("secondary data recived\n");
         }
+        
+        kalman_filter.predict(time_diff);
+        kalman_filter.update(raw_data.core_data.barometer.altitude, raw_data.core_data.acceleration.x); //x axis for test data
+        kalman_filter.update_values(&raw_data.core_data.prediction);
+        update_state(raw_data.core_data);
+
         raw_data.state = current_state;
         xQueueSend(flightDataQueue, &raw_data, pdMS_TO_TICKS(100));
 
