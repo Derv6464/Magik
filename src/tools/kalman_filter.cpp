@@ -10,7 +10,7 @@ KalmanFilter::KalmanFilter() {
 
     // confidence in x matrix prediction
     P = Eigen::MatrixXd(3, 3);
-    P << 0.0001, 0, 0,
+    P << 1, 0, 0,
          0, 0.0001, 0,
          0, 0, 0.0001;
 
@@ -21,6 +21,15 @@ KalmanFilter::KalmanFilter() {
     Q << 0.001, 0, 0,
          0, 0.001, 0,
          0, 0, 10;
+
+    H = Eigen::MatrixXd(2, 3);
+    H << 1, 0, 0,
+         0, 0, 1;
+
+    R = Eigen::MatrixXd(2, 2);
+    R << 0.1, 0, //baro noise
+         0, 0.01; //accel noise
+     
 }
 KalmanFilter::~KalmanFilter() {
     // Destructor
@@ -43,15 +52,6 @@ void KalmanFilter::update(float z_baro, float z_accel) {
     Eigen::VectorXd z(2);
     z(0) = z_baro; // barometer measurement
     z(1) = z_accel; // accelerometer measurement
-
-    H = Eigen::MatrixXd(2, 3);
-    H << 1, 0, 0,
-         0, 0, 1;
-
-    R = Eigen::MatrixXd(2, 2);
-    R << 0.1, 0, //baro noise
-         0, 0.01; //accel noise
-
 
     Eigen::MatrixXd K = P * H.transpose() * (H * P * H.transpose() + R).inverse();
 
