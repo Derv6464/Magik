@@ -3,7 +3,8 @@
 
 Barometer::Barometer(SPI *spi, int cs) {
     printf("Barometer created\n");
-    // Chip select is active-low, so we'll initialise it to a driven-high state
+
+    //make cs high
     gpio_init(cs);
     gpio_set_dir(cs, GPIO_OUT);
     gpio_put(cs, 1);

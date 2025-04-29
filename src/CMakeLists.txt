@@ -36,7 +36,13 @@ target_link_libraries(${ProjectName}
     hardware_sync
     hardware_spi
     hardware_i2c
+    pico_btstack_ble
+    pico_btstack_cyw43
+    pico_cyw43_arch_none
+    hardware_adc
     )
+
+#pico_btstack_make_gatt_header(${ProjectName}  PRIVATE "${CMAKE_CURRENT_LIST_DIR}/tools/bt_server_info.gatt")
 
 pico_add_extra_outputs(${ProjectName})
 
