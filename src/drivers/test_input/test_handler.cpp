@@ -1,3 +1,5 @@
+#include "../../config.h"
+#ifdef TESTING
 #include "test_handler.h"
 
 TestHandler::TestHandler(UART* serial){
@@ -33,7 +35,7 @@ void TestHandler::split_data(){
             last_accle_data.x = *(float*)&accle_buffer[0];
             last_accle_data.y = *(float*)&accle_buffer[4];
             last_accle_data.z = *(float*)&accle_buffer[8];
-            printf("Driver: Accelerometer data: %f %f %f\n", last_accle_data.x, last_accle_data.y, last_accle_data.z);
+            //printf("Driver: Accelerometer data: %f %f %f\n", last_accle_data.x, last_accle_data.y, last_accle_data.z);
             break;
 
         case 'g':
@@ -51,3 +53,4 @@ void TestHandler::split_data(){
 };
 
 
+#endif

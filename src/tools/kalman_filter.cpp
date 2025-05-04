@@ -11,7 +11,7 @@ KalmanFilter::KalmanFilter() {
     // confidence in x matrix prediction
     P = Eigen::MatrixXd(3, 3);
     P << 1, 0, 0,
-         0, 0.0001, 0,
+         0, 0.001, 0,
          0, 0, 0.0001;
 
     F = Eigen::MatrixXd(3, 3);
@@ -19,7 +19,7 @@ KalmanFilter::KalmanFilter() {
     //confidence in f matrix prediction , could scale for time in future
     Q = Eigen::MatrixXd(3, 3);
     Q << 0.001, 0, 0,
-         0, 0.001, 0,
+         0, 0.01, 0,
          0, 0, 10;
 
     H = Eigen::MatrixXd(2, 3);
@@ -35,9 +35,8 @@ KalmanFilter::~KalmanFilter() {
     // Destructor
 }
 
-void KalmanFilter::predict(int t) {
+void KalmanFilter::predict(float t) {
     // Predict the state
-
     // based of s = ut + 0.5at^2, v = u + at, a = constant
 
     F << 1, t, 0.5 * t * t,

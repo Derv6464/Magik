@@ -6,10 +6,10 @@ public:
     KalmanFilter();
     ~KalmanFilter();
 
-    void predict(int t);
+    void predict(float time);
     void update(float z_baro, float z_accel);
     void update_values(prediction_data* data) {
-        data->position = x(0);
+        data->altitude = x(0);
         data->velocity = x(1);
         data->acceleration = x(2);
     }

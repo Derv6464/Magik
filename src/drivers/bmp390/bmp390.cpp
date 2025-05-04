@@ -14,12 +14,18 @@ extern "C" BMP3_INTF_RET_TYPE bmp3_spi_write(uint8_t reg_addr, const uint8_t *da
     return 0;
 }
 
+extern "C" void delay_us(uint32_t period, void *intf_ptr) {
+    printf("Delay: %d\n", period);
+    printf("fake sleep cause debugger not like");
+}
+
 BMP390::BMP390(SPI *spi, int cs) : spi(spi), cs(cs) {
     printf("Barometer created\n");
 
     baro.intf = BMP3_SPI_INTF;
     baro.read = bmp3_spi_read;
     baro.write = bmp3_spi_write;
+    baro.delay_us = delay_us;
     baro.intf_ptr = spi;
     baro.dummy_byte = 0;
 
@@ -33,16 +39,16 @@ BMP390::BMP390(SPI *spi, int cs) : spi(spi), cs(cs) {
     
     spi->cs_select(cs);
     int8_t rslt = bmp3_init(&baro);
-    //uint8_t tx = 0x00;
-    //uint8_t rx[2];
+    uint8_t tx = 0x00;
+    uint8_t rx[2];
     //
-    //spi->read_no_cs(tx, rx, 2);
+    spi->read_no_cs(tx, rx, 2);
     spi->cs_deselect(cs);
 
-    //for (int i = 0; i < 2; i++) {
-    //    printf("rx[%d]: %02x\n", i, rx[i]);
-    //}
-    //bmp3_check_rslt("bmp3_init", rslt);
+    for (int i = 0; i < 2; i++) {
+        printf("rx[%d]: %02x\n", i, rx[i]);
+    }
+    bmp3_check_rslt("bmp3_init", rslt);
     
     printf("Barometer initialized\n");
   

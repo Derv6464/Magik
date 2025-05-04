@@ -4,13 +4,14 @@
 #include "queue.h"
 #include "../config.h"
 #include "kalman_filter.h"
+#include <stdio.h>
+#include "pico/stdlib.h"
 
 class StateMachine {
 public:
     typedef void (*StateHandler)();
     enum State {
         INIT,
-        BLUETOOTH_SETTINGS,
         CALIBRATING,
         READY,
         POWERED,
@@ -30,12 +31,12 @@ private:
     bool called_once[NUM_STATES];
     State current_state;
     
-    void update_state(core_flight_data data);
+    void update_state(core_flight_data raw_data, prediction_data prediction);
     void check_settings_state_done(bool setting_pin);
     void check_bt_done(bool bt_active, bool setting_pin);
     void check_calibrating_state_done();
-    void check_ready_state_done(float accel_x, float accel_y, float accel_z);
-    void check_powered_state_done(float accel_x, float accel_y, float accel_z);
+    void check_ready_state_done(float accel);
+    void check_powered_state_done(float accel);
     void check_coasting_state_done(float velocity);
     void check_drouge_state_done(float height);
     void check_main_state_done(float height);

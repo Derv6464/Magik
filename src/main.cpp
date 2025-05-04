@@ -11,7 +11,6 @@
 #include "pico/cyw43_arch.h"
 #include "pico/btstack_cyw43.h"
 #include "hardware/adc.h"
-#include "pico/stdlib.h"
 
 #include "tools/bt_server.h"
 #include "tools/bt_server_info.h"
@@ -30,6 +29,7 @@
 #include "outputs/radio.h"
 #include "outputs/logger.h"
 #include "outputs/telemetry.h"
+#include "outputs/pyro.h"
 
 #ifdef TESTING
 #include "drivers/test_input/test_handler.h"
@@ -53,7 +53,10 @@ void handle_powered() {
     printf("unlcking pyro\n");
  }
 void handle_coasting() { printf("State: COASTING\n"); }
-void handle_drouge() { printf("State: DROUGE\n"); }
+void handle_drouge() { 
+    //ignite.fire(1);
+    printf("State: DROUGE\n");
+ }
 void handle_main() { printf("State: MAIN\n"); }
 void handle_landed() { printf("State: LANDED\n"); }
 
@@ -153,9 +156,11 @@ void run_flight(Status_led* status_led){
     printf("flightDataQueue: %d\n", sizeof(flight_data));
     printf("coreDataQueue: %d\n", sizeof(core_flight_data));
     printf("secDataQueue: %d\n", sizeof(secondary_flight_data));
-    //SPI spi_0(sck_1, mosi_1, miso_1, spi0);
+
+    Pyro ignite = Pyro(pyro_en, pyro_1, pyro_2);
+    ignite.lock();
+    
     uart_inst_t* port = uart_get_instance(1);
-    //spi_inst_t* spi_port = spi_get_in
     i2c_inst_t* i2c_port = i2c_get_instance(0);
 
     #ifdef TESTING
@@ -164,15 +169,15 @@ void run_flight(Status_led* status_led){
   
     Barometer barometer(&testHandler); 
     Accelerometer accelerometer(&testHandler);
-    //GPS gps(&testHandler);
+    GPS gps(&testHandler);
     Radio* radio = new Radio();
     Logger* logger = new Logger();
     #else
-    //SPI spi_1(sck_1, mosi_1, miso_1, spi0);
-    //Barometer barometer(&spi_1, cs_baro);
-    I2C i2c_0(sda_0, scl_0, i2c_port);
-    int mpu = 0x68;
-    Accelerometer accelerometer(&i2c_0, mpu);
+    SPI spi_1(sck_1, mosi_1, miso_1, spi1);
+    Barometer barometer(&spi_1, cs_baro);
+    //I2C i2c_0(sda_0, scl_0, i2c_port);
+    //int mpu = 0x68;
+    //Accelerometer accelerometer(&i2c_0, mpu);
     #endif
 
     printf("UART created\n");
@@ -181,8 +186,8 @@ void run_flight(Status_led* status_led){
     core_sensors.addSensor(&barometer);
     core_sensors.addSensor(&accelerometer);
 
-    //SensorHandler<secondary_flight_data> sec_sensors(secDataQueue);
-    //sec_sensors.addSensor(&gps);
+    SensorHandler<secondary_flight_data> sec_sensors(secDataQueue);
+    sec_sensors.addSensor(&gps);
 
     StateMachine::StateHandler state_handlers[] = {
         handle_init,
@@ -207,21 +212,32 @@ void run_flight(Status_led* status_led){
         }
     };
 
-    Telemetry* telemetry = new Telemetry(radio, logger);
+    //Telemetry* telemetry = new Telemetry(radio, logger);
 //
-    TelemetryArgs* telemArgs = new TelemetryArgs{
-        .telem = telemetry,
-        .flightDataQueue = flightDataQueue
-    };
+    //TelemetryArgs* telemArgs = new TelemetryArgs{
+    //    .telem = telemetry,
+    //    .flightDataQueue = flightDataQueue
+    //};
  
     xTaskCreate(run_task, "Flight_State_Task", 512, fsmArgs, 3, NULL);
     xTaskCreate(run_core_sensors, "CoreSensorTask", 512, &core_sensors, 4, NULL);
-    //xTaskCreate(run_secondary_sensors, "SecondarySensorTask", 256, &sec_sensors, 2, NULL);
+    xTaskCreate(run_secondary_sensors, "SecondarySensorTask", 256, &sec_sensors, 2, NULL);
     #ifdef TESTING
     xTaskCreate(run_test_hander, "TestHandlerTask", 512, &testHandler, 5, NULL);
     #endif
     //xTaskCreate(printRunning, "PrintTask", 256, NULL, 3, NULL);
-    xTaskCreate(run_telem, "Telemetry Task", 512, telemArgs, 2, NULL);
+    //xTaskCreate(run_telem, "Telemetry Task", 512, telemArgs, 2, NULL);
+
+    #ifdef TESTING
+    gpio_init(neopixel);
+    gpio_set_dir(neopixel, GPIO_OUT);
+
+    // Pull the RUN pin low to reset the second Pico
+    gpio_put(neopixel, 1);
+    printf("RUN pin low\n");
+
+    gpio_put(neopixel, 0);
+    #endif
 
     vTaskStartScheduler();
 
@@ -303,7 +319,9 @@ int run_settings(Status_led* status_led){
 
         // this is a forever loop in place of where user code would go.
         while(true) {      
-            sleep_ms(1000);
+            //sleep_ms(1000);
+
+            printf("Running\n");
         }
     #endif
         return 0;

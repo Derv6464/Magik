@@ -22,28 +22,36 @@ void SPI::read(int cs, uint8_t reg, uint8_t *buf, uint16_t len) {
     reg |= READ_BIT;
     cs_select(cs);
     spi_write_blocking(port, &reg, 1);
-    sleep_ms(10);
+    //sleep_ms(10); doesnt work in debug
+    printf("bla bla bla\n");  //killin time cause debug hates sleep
     spi_read_blocking(port, 0, buf, len);
     cs_deselect(cs);
-    sleep_ms(10);
+    //sleep_ms(10); doesnt work in debug
+    printf("bla bla bla\n");  //killin time cause debug hates sleep
 }
 
 void SPI::write(int cs, uint8_t reg, uint8_t *buf, uint16_t len) {
     reg |= READ_BIT;
     cs_select(cs);
     spi_write_blocking(port, &reg, 1);
-    sleep_ms(10);
+    //sleep_ms(10); doesnt work in debug
+    printf("bla bla bla\n");  //killin time cause debug hates sleep
     cs_deselect(cs);
-    sleep_ms(10);
+    //sleep_ms(10); doesnt work in debug
+    printf("bla bla bla\n");  //killin time cause debug hates sleep
 }
 
 void SPI::read_no_cs(uint8_t reg, uint8_t *buf, uint16_t len) {
     printf("read_no_cs reg: %02x\n", reg);
     reg |= READ_BIT;
-    printf("read_no_cs reg: %02x\n", reg);
     // Perform full-duplex SPI transaction
     spi_write_blocking(port, &reg, 1);
     spi_read_blocking(port, 0, buf, len);
+
+    printf("read_no_cs buf: ");
+    for (int i = 0; i < len; i++) {
+        printf("%02x ", buf[i]);
+    }
 
     printf("read_no_cs done\n");
 }
@@ -55,7 +63,8 @@ void SPI::write_no_cs(uint8_t* reg, uint8_t const *buf, uint16_t len) {
 
     //reg |= READ_BIT;
     spi_write_blocking(port, reg, len);
-    sleep_ms(10);
+    //sleep_ms(10); doesnt work in debug
+    printf("bla bla bla\n");  //killin time cause debug hates sleep
 }
 
 

@@ -58,7 +58,7 @@ void Accelerometer::update(core_flight_data* data){
     data->acceleration.z = accel_data.z;
 
     //printf("Accel: %f %f %f\n", data->acceleration.x, data->acceleration.y, data->acceleration.z);
-    data->velocity = getVelocity(data->velocity, accel_data.z, data->time);
+    //data->velocity = getVelocity(data->velocity, accel_data.z, data->time);
     data->time = currentTime;
 }
 

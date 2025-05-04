@@ -2,9 +2,14 @@
 #include <stdio.h>
 
 GPS::GPS(UART *uart) {
-    #ifdef BARO_BMP390
-        printf("Barometer BMP390\n");
-        barometer = new BMP390(spi, cs);
+    printf("GPS created, uart\n");
+    #ifdef GPS_MAXM10S
+        printf("GPS MAXM10S\n");
+        gps = new MAXM10S(uart);
+    #endif
+    #ifdef GPS_PA
+        printf("GPS PA\n");
+        gps = new PA(uart);
     #endif
 }
 

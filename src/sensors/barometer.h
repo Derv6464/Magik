@@ -26,7 +26,7 @@ class Barometer: public Sensor<core_flight_data> {
         ~Barometer();
         void update(core_flight_data* data) override;
     private:
-        DriverIn<baro_data>* barometer = nullptr;
+        DriverIn<baro_data>* barometer;
         float getAltitude(float pressure);
         int const sea_level_pressure = 101325;
 };

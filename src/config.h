@@ -1,4 +1,11 @@
 #pragma once
+
+#define TESTING
+//#define TEST_RIG
+
+#define read_data_delay 50 //ms 
+#define send_data_delay 5000 //ms
+
 //#define BARO_BMP390
 //#define ACCEL_LSM6DS3
 //#define ACCEL_ADXL345
@@ -7,11 +14,16 @@
 //#define RADIO_SX1278
 //#define LOG_SD
 
+#ifdef TEST_RIG
+#define BARO_BMP390
+//#define ACCEL_LSM6DSOX
+//#define GPS_PA
+//#define RADIO_RM95W
+#endif
+
 #define LOG_INTERNAL_FLASH
 #define LOG_FLASH_OFFSET 1024*1024 
 #define LOG_FLASH_SETTINGS_OFFSET 1024*512 
-
-#define TESTING
 
 //I2C bus for high g accelerometer
 //#define sda_0 0
@@ -59,30 +71,3 @@
 
 #define bt_setting_pin 2
 
-#define read_data_delay 100 //ms 
-#define send_data_delay 5000 //ms
-
-namespace flight_settings {
-    class FlightSettings {
-    public:
-        FlightSettings();
-        ~FlightSettings();
-        void init();
-        void setFlightSettings(int main_deploy_height, int drouge_deploy_delay, int liftoff_threshold){
-            this->main_deploy_height = main_deploy_height;
-            this->drouge_deploy_delay = drouge_deploy_delay;
-            this->liftoff_threshold = liftoff_threshold;
-        };
-        int getMainDeployHeight() { return main_deploy_height; }
-        int getDrougeDeployDelay() { return drouge_deploy_delay; }
-        int getLiftoffThreshold() { return liftoff_threshold; }
-        void setMainDeployHeight(int height) { main_deploy_height = height; }
-        void setDrougeDeployDelay(int delay) { drouge_deploy_delay = delay; }
-        void setLiftoffThreshold(int threshold) { liftoff_threshold = threshold; }
-
-    private:
-        int main_deploy_height;
-        int drouge_deploy_delay;
-        int liftoff_threshold;
-    };
-}

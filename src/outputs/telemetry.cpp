@@ -39,7 +39,6 @@ void Telemetry::serialise(flight_data* data, int serialised_data[45]){
     memcpy(serialised_data + offset, &data->core_data.barometer.pressure, sizeof(data->core_data.barometer.pressure)); offset += sizeof(data->core_data.barometer.pressure);
     memcpy(serialised_data + offset, &data->core_data.barometer.temperature, sizeof(data->core_data.barometer.temperature)); offset += sizeof(data->core_data.barometer.temperature);
     memcpy(serialised_data + offset, &data->core_data.barometer.altitude, sizeof(data->core_data.barometer.altitude)); offset += sizeof(data->core_data.barometer.altitude);
-    memcpy(serialised_data + offset, &data->core_data.velocity, sizeof(data->core_data.velocity)); offset += sizeof(data->core_data.velocity);
     memcpy(serialised_data + offset, &data->core_data.acceleration, sizeof(data->core_data.acceleration)); offset += sizeof(data->core_data.acceleration);
     memcpy(serialised_data + offset, &data->secondary_data.time, sizeof(data->secondary_data.time)); offset += sizeof(data->secondary_data.time);
     // memcpy(serialised_data + offset, &data->secondary_data.gps.latitude, sizeof(data->secondary_data.gps.latitude)); offset += sizeof(data->secondary_data.gps.latitude);

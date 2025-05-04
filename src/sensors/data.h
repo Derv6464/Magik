@@ -2,7 +2,9 @@
 #define DATA_H
 #include "FreeRTOS.h"
 #include "queue.h"
+#include <stdio.h>
 
+//12 bytes
 struct accle_data
 {
     float x{0};
@@ -12,63 +14,67 @@ struct accle_data
 
 struct gyro_data
 {
-    int x{0};
-    int y{0};
-    int z{0};
+    int16_t x{0};
+    int16_t y{0};
+    int16_t z{0};
 };
 
+//10 bytes update
 struct baro_data
 {
-    int pressure{101325};
+    int32_t pressure{101325};
     float temperature{0};
     float altitude{0};
 };
 
+//12 bytes
 struct prediction_data
 {
-    float position{0};
+    float altitude{0};
     float velocity{0};
     float acceleration{0};
 };
 
+//188 bits (no predict) 
 struct core_flight_data
 {
-    int time{0};
+    uint32_t time{0};
     baro_data barometer;
     accle_data acceleration;
-    prediction_data prediction;
-    float velocity{0};
-    bool setting_pin;
-    bool bt_active;
+    bool setting_pin{0};
+    bool bt_active{0};
 };
 
+//25 bytes
 struct gps_data
 {
     double latitude;
     double longitude;
     float altitude;
     float velocity;
-    int satellites;
+    uint8_t satellites;
 };
+
 
 struct imu_data
 {
     accle_data acceleration;
     gyro_data gyro;
-    int temperature;
+    int temperature; //check this
 };
 
+//39 bytes
 struct secondary_flight_data
 {
-    int time;
+    uint16_t time;
     gps_data gps;
     accle_data acceleration;
-    imu_data imu;
-    float velocity{0};
+   // imu_data imu;
 };
 
 struct flight_data
 {
+    prediction_data prediction;
     core_flight_data core_data;
     secondary_flight_data secondary_data;
     int state;
