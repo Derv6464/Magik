@@ -74,9 +74,9 @@ void StateMachine::check_calibrating_state_done()
 void StateMachine::check_ready_state_done(float accel)
 {
     //float accel = (accel_x * accel_x) + (accel_y * accel_y) + (accel_z * accel_z);
-    float threshold = 10;
-    printf("State Machine: Ready, accel: %f, threshold: %f \n", accel, threshold);
-    if (accel > threshold)
+    float threshold = 30; //to get set by user
+    printf("State Machine: Ready, accel: %f, threshold: %f \n", fabsf(accel), (threshold/9.81));
+    if (fabsf(accel) > (threshold/9.81f))
     {
         change_state(State::POWERED);
     }
@@ -85,7 +85,7 @@ void StateMachine::check_ready_state_done(float accel)
 void StateMachine::check_powered_state_done(float accel)
 {
     //float accel = (accel_x * accel_x) + (accel_y * accel_y) + (accel_z * accel_z);
-    if (accel < 0.5f)
+    if (accel < 0.0f)
     {
         printf("State Machine: Coasting, accel_x: %f\n", accel);
         change_state(State::COASTING);
@@ -164,7 +164,12 @@ void StateMachine::run(void *pvParameters)
             //printf("secondary data recived\n");
         }
         kalman_filter.predict(time_diff);
-        kalman_filter.update(raw_data.core_data.barometer.altitude, raw_data.core_data.acceleration.x); // x axis for test data
+        if (raw_data.state > 4)
+        {
+            //acceleration not relivant after apogee
+            raw_data.core_data.acceleration.y = 0.0000f;
+        }
+        kalman_filter.update(raw_data.core_data.barometer.altitude, (raw_data.core_data.acceleration.y)); // y axis for test data
         kalman_filter.update_values(&raw_data.prediction);
         update_state(raw_data.core_data, raw_data.prediction);
         //printf("State Machine: %d\n", current_state);

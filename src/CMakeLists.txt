@@ -42,7 +42,8 @@ target_link_libraries(${ProjectName}
     hardware_adc
     )
 
-#pico_btstack_make_gatt_header(${ProjectName}  PRIVATE "${CMAKE_CURRENT_LIST_DIR}/tools/bt_server_info.gatt")
+
+pico_btstack_make_gatt_header(${ProjectName}  PRIVATE "${CMAKE_CURRENT_LIST_DIR}/tools/bt_server_info.gatt")
 
 pico_add_extra_outputs(${ProjectName})
 

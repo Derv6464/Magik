@@ -6,26 +6,44 @@ class DataPoint:
     def __init__(self,time, data):
         self.time = time
         self.data = eval(data)
+
+def printstate(time):
+    if time < 0:
+        print("ready", 2)
+    elif time < 5.69:
+        print("powered", 3)
+    elif time < 21.22:
+        print("coasting", 4)
+    elif time < 110.36:
+        print("drouge", 5)
+    elif time < 122.12:
+        print('main', 6)
+    elif time > 122.12:
+        print('landed', 7)
+        
    
 def main():
     led = machine.Pin(25, machine.Pin.OUT)
     uart = UART(0, baudrate=115200, tx=Pin(0), rx=Pin(1))
     uart.init(115200, bits=8, parity=None, stop=1)
     
+    start_time = time.time()
     with open("data.txt", "r") as file:
-    # Loop through the first 10 lines
         while True:
+            start_op = time.time_ns()
             line = file.readline()
             if not line:
                 break  # Stop if the file has fewer than 10 lines
             print(line.strip())
-            dataIn = line.split(' ')
-            data = DataPoint(dataIn[0], dataIn[1])
+            dataIn = line.split(' ', 1)
+            data = DataPoint(float(dataIn[0]), dataIn[1])
+            print(printstate(data.time))
             print(data.data)
             print(len(data.data))
             uart.write(data.data)
-            
-            time.sleep(3)
+            #print('end op', time.time_ns()-start_op)
+            time.sleep(0.03)
+           
         
             
 def other_main():

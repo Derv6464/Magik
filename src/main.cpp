@@ -10,12 +10,12 @@
 #include "btstack.h"
 #include "pico/cyw43_arch.h"
 #include "pico/btstack_cyw43.h"
-#include "hardware/adc.h"
 
-#include "tools/bt_server.h"
-#include "tools/bt_server_info.h"
+#include "tools/bt_server_gap.h"
+#include "tools/bt_server_gatt.h"
 #include "tools/state_machine.h"
 #include "tools/interfaces.h"
+#include "tools/settings.h"
 
 #include "sensors/barometer.h"
 #include "sensors/accelerometer.h"
@@ -147,7 +147,7 @@ void run_test_hander(void* pvParameters) {
 //        vTaskDelay(pdMS_TO_TICKS(1000));
 //    }
 //}
-void run_flight(Status_led* status_led){
+void run_flight(Status_led* status_led, FlightSettings* flight_settings) {
     QueueHandle_t coreDataQueue = xQueueCreate(3, sizeof(core_flight_data));
     QueueHandle_t secDataQueue = xQueueCreate(3, sizeof(secondary_flight_data));
     QueueHandle_t flightDataQueue = xQueueCreate(1, sizeof(flight_data));
@@ -202,6 +202,7 @@ void run_flight(Status_led* status_led){
     };
 
     StateMachine* fsm = new StateMachine(state_handlers);
+    //take in flight settings to init heights
 
     StateMachineArgs* fsmArgs = new StateMachineArgs{
         .fsm = fsm,
@@ -246,34 +247,21 @@ void run_flight(Status_led* status_led){
     };
 }
 
-#define HEARTBEAT_PERIOD_MS 1000
+#define HEARTBEAT_PERIOD_MS 250
 
+// BTstack objects
 static btstack_timer_source_t heartbeat;
 static btstack_packet_callback_registration_t hci_event_callback_registration;
+static int characteristic_appogee_value = 0;
 
-static void heartbeat_handler(struct btstack_timer_source *ts) {
-    static uint32_t counter = 0;
-    counter++;
+static char characteristic_apogee_value_tx[10];
+static char characteristic_apogee_value_rx[10];
+static char characteristic_main_value_tx[10];
+static char characteristic_main_value_rx[10];
+static char characteristic_done_value_rx[10];
 
-    // Update the temp every 10s
-    if (counter % 10 == 0) {
-        poll_temp();
-        if (le_notification_enabled) {
-            att_server_request_can_send_now_event(con_handle);
-        }
-    }
 
-    // Invert the led
-    static int led_on = true;
-    led_on = !led_on;
-    cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, led_on);
-
-    // Restart timer
-    btstack_run_loop_set_timer(ts, HEARTBEAT_PERIOD_MS);
-    btstack_run_loop_add_timer(ts);
-}
-
-int run_settings(Status_led* status_led){
+int run_settings(Status_led* status_led, FlightSettings* flight_settings) {
     printf("Settings\n");
     status_led->set_color(Status_led::Color::BLUE);
      // initialize CYW43 driver architecture (will enable BT if/because CYW43_ENABLE_BLUETOOTH == 1)
@@ -282,15 +270,26 @@ int run_settings(Status_led* status_led){
         return -1;
     }
 
-    // Initialise adc for the temp sensor
-    adc_init();
-    adc_select_input(ADC_CHANNEL_TEMPSENSOR);
-    adc_set_temp_sensor_enabled(true);
-
+    // Initialize L2CAP and security manager
     l2cap_init();
     sm_init();
 
-    att_server_init(profile_data, att_read_callback, att_write_callback);    
+    // Initialize ATT server, no general read/write callbacks
+    // because we'll set one up for each service
+    att_server_init(profile_data, NULL, NULL);   
+
+    // Instantiate our custom service handler
+    service_handler = custom_service_server_init( 
+        characteristic_apogee_value_tx,
+        characteristic_main_value_tx,
+        characteristic_apogee_value_rx,
+        characteristic_main_value_rx,
+        characteristic_done_value_rx
+    ); ;
+
+    att_server_register_service_handler(&service_handler);
+    printf("Registered service handler: start=0x%04x, end=0x%04x\n", service_handler.start_handle, service_handler.end_handle);
+    printf("Registered service handler: start=0x%04x, end=0x%04x\n", service_handler.write_callback, service_handler.read_callback);
 
     // inform about BTstack state
     hci_event_callback_registration.callback = &packet_handler;
@@ -299,14 +298,16 @@ int run_settings(Status_led* status_led){
     // register for ATT event
     att_server_register_packet_handler(packet_handler);
 
-    // set one-shot btstack timer
-    heartbeat.process = &heartbeat_handler;
-    btstack_run_loop_set_timer(&heartbeat, HEARTBEAT_PERIOD_MS);
-    btstack_run_loop_add_timer(&heartbeat);
-
     // turn on bluetooth!
     hci_power_control(HCI_POWER_ON);
     
+    //if recveice notifiy
+    //if (strcmp(characteristic_done_value_rx, "done") == 0) {
+    //    printf("Received done\n");
+    
+
+
+
     // btstack_run_loop_execute is only required when using the 'polling' method (e.g. using pico_cyw43_arch_poll library).
     // This example uses the 'threadsafe background` method, where BT work is handled in a low priority IRQ, so it
     // is fine to call bt_stack_run_loop_execute() but equally you can continue executing user code.
@@ -321,7 +322,7 @@ int run_settings(Status_led* status_led){
         while(true) {      
             //sleep_ms(1000);
 
-            printf("Running\n");
+            //printf("Running\n");
         }
     #endif
         return 0;
@@ -337,12 +338,14 @@ int main() {
     Status_led status_led(neopixel);
     status_led.set_color(Status_led::Color::RED);
 
-    if (!gpio_get(bt_setting_pin)) {  
+    FlightSettings flight_settings;
+
+    if (gpio_get(bt_setting_pin)) {  
         printf("Running settings\n");
-        run_settings(&status_led);
+        run_settings(&status_led, &flight_settings);
     } else {
         printf("Running flight\n");
-        run_flight(&status_led);
+        run_flight(&status_led, &flight_settings);
     }
 
 };

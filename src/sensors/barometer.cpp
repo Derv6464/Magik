@@ -15,6 +15,10 @@ Barometer::Barometer(SPI *spi, int cs) {
         printf("Barometer BMP390\n");
         barometer = new BMP390(spi, cs);
     #endif
+
+    //get intial height
+    barometer->update(start_data);
+    start_altitude = getAltitude(start_data.pressure);
 }
 
 #ifdef TESTING
@@ -22,8 +26,10 @@ Barometer::Barometer(TestHandler* handler){
    
         printf("Barometer Tester\n");
         barometer = new Tester_Baro(handler);
-    
+
     printf("Barometer created\n");
+
+    start_altitude = getAltitude(99694.0f);
 }
 #endif
 
@@ -40,7 +46,7 @@ void Barometer::update(core_flight_data* data) {
     barometer->update(baro_data);
     data->barometer.pressure = baro_data.pressure;
     data->barometer.temperature = baro_data.temperature;
-    data->barometer.altitude = getAltitude(baro_data.pressure);
+    data->barometer.altitude = (getAltitude(baro_data.pressure) - start_altitude);
 }
 
 float Barometer::getAltitude(float pressure) {

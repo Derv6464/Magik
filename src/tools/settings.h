@@ -5,6 +5,7 @@ class FlightSettings {
         FlightSettings();
         ~FlightSettings();
         void init();
+        //add in read from memory
         void setFlightSettings(int main_deploy_height, int drouge_deploy_delay, int liftoff_threshold){
             this->main_deploy_height = main_deploy_height;
             this->drouge_deploy_delay = drouge_deploy_delay;

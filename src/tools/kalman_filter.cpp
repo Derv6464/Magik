@@ -19,8 +19,8 @@ KalmanFilter::KalmanFilter() {
     //confidence in f matrix prediction , could scale for time in future
     Q = Eigen::MatrixXd(3, 3);
     Q << 0.001, 0, 0,
-         0, 0.01, 0,
-         0, 0, 10;
+         0, 0.001, 0,
+         0, 0, 100;
 
     H = Eigen::MatrixXd(2, 3);
     H << 1, 0, 0,

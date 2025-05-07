@@ -50,13 +50,13 @@ def make_graph():
     fig.show()
    
 def get_test_data():
-    f = open('test/board_data/magik/1.txt', 'r')
+    f = open('test/board_data/magik/2.txt', 'r')
     #data ponts were read in 0.5s appart (est)
     lines = f.readlines()
     f.close()
     df = pd.DataFrame(columns=['time', 'alt', 'vel', 'acc', 'state'])
     state = 0
-    start_time = int(lines[1].split(' ')[1])
+    start_time = int(lines[0].split(' ')[1])
     for line in lines:
         if 'data' in line:
             line = line.split(' ')
@@ -77,7 +77,7 @@ def make_test_graph():
     fig = go.Figure()
     title = ""
     x_axis = ""
-    fig.add_trace(go.Scatter(x=df['time'], y=df['acc'], mode='lines',name='Magik'))
+    fig.add_trace(go.Scatter(x=df['time'], y=(df['acc']*9.81*1.4), mode='lines',name='Magik'))
 
     fig.add_trace(go.Scatter(x=df_vega['ts'], y=df_vega['acceleration'],
             mode='lines',
