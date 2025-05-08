@@ -7,6 +7,7 @@ file(GLOB SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/drivers/bmp390/*.c
     ${CMAKE_CURRENT_SOURCE_DIR}/drivers/MPU6050/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/drivers/test_input/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/drivers/adafruit_gps/*.cpp
 
     ${CMAKE_CURRENT_SOURCE_DIR}/drivers/flash_internal/*.cpp
 )

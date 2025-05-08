@@ -2,8 +2,16 @@
 
 class FlightSettings {
     public:
-        FlightSettings();
-        ~FlightSettings();
+        FlightSettings(){
+            // Constructor CHANGE THIS VALUES
+            main_deploy_height = 0;
+            drouge_deploy_delay = 0;
+            liftoff_threshold = 0;
+        };
+        ~FlightSettings(){
+            // Destructor
+
+        };
         void init();
         //add in read from memory
         void setFlightSettings(int main_deploy_height, int drouge_deploy_delay, int liftoff_threshold){
