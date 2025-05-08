@@ -1,7 +1,0 @@
-"filename", "language", "C++", "C", "comment", "blank", "total"
-"/Users/dervlagargan/Documents/Projects/HiPR/FlightComp/code_stuff/magik/src/drivers/bmp390/bmp3.c", "C", 0, 1479, 1099, 386, 2964
-"/Users/dervlagargan/Documents/Projects/HiPR/FlightComp/code_stuff/magik/src/drivers/bmp390/bmp3.h", "C++", 37, 0, 486, 31, 554
-"/Users/dervlagargan/Documents/Projects/HiPR/FlightComp/code_stuff/magik/src/drivers/bmp390/bmp390.cpp", "C++", 92, 0, 13, 21, 126
-"/Users/dervlagargan/Documents/Projects/HiPR/FlightComp/code_stuff/magik/src/drivers/bmp390/bmp390.h", "C++", 26, 0, 0, 3, 29
-"/Users/dervlagargan/Documents/Projects/HiPR/FlightComp/code_stuff/magik/src/drivers/bmp390/bmp3_defs.h", "C++", 446, 0, 295, 182, 923
-"Total", "-", 601, 1479, 1893, 623, 4596
