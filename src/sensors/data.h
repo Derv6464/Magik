@@ -87,5 +87,12 @@ struct AllQueuesArgs {
     QueueHandle_t flightDataQueue;
 };
 
+struct flash_internal_data {
+    int main_height;
+    int drouge_delay;
+    int liftoff_thresh;
+    int last_log;
+};
+
 #endif // DATA_H
 

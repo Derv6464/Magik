@@ -6,12 +6,14 @@
 #include <stdio.h>
 #include "pico/flash.h"
 #include "hardware/flash.h"
+#include "../../sensors/data.h"
 
 class FlashInternal : public DriverOut {
 public:
     FlashInternal();
     void send(int* data) override;
-
+    void save_settings(flash_internal_data settings);
+    flash_internal_data get_settings();
 private:
     static void call_flash_range_erase(void *param);
     static void call_flash_range_program(void *param);
@@ -20,6 +22,7 @@ private:
     char overflow[10];
     int sector{LOG_FLASH_OFFSET};
 };
+
 
 
 #endif // FLASH_LOGGER_H

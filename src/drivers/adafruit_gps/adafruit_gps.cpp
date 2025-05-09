@@ -31,7 +31,7 @@ float Adafuit_GPS::getLatitude() {
     return latitude;
 }
 
-float GAdafuit_GPSPS::getLongitude() {
+float Adafuit_GPS::getLongitude() {
     return longitude;
 }
 

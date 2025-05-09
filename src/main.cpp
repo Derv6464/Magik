@@ -304,8 +304,14 @@ int run_settings(Status_led* status_led, FlightSettings* flight_settings) {
     //if recveice notifiy
     //if (strcmp(characteristic_done_value_rx, "done") == 0) {
     //    printf("Received done\n");
-    
+    flash_internal_data settings = {
+        .main_height = 1,
+        .drouge_delay = 1,
+        .liftoff_thresh = 1,
+        .last_log = 0
+    };  
 
+    flight_settings->save_settings(settings);
 
 
     // btstack_run_loop_execute is only required when using the 'polling' method (e.g. using pico_cyw43_arch_poll library).
@@ -337,8 +343,9 @@ int main() {
 
     Status_led status_led(neopixel);
     status_led.set_color(Status_led::Color::RED);
-
+  
     FlightSettings flight_settings;
+    flight_settings.get_settings();
 
     if (gpio_get(bt_setting_pin)) {  
         printf("Running settings\n");
@@ -347,5 +354,4 @@ int main() {
         printf("Running flight\n");
         run_flight(&status_led, &flight_settings);
     }
-
 };

@@ -23,7 +23,7 @@
 
 #define LOG_INTERNAL_FLASH
 #define LOG_FLASH_OFFSET 1024*1024 
-#define LOG_FLASH_SETTINGS_OFFSET 1024*512 
+#define SETTINGS_OFFSET 1024*512 
 
 //I2C bus for high g accelerometer
 //#define sda_0 0

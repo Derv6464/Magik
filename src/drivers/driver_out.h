@@ -4,7 +4,7 @@
 class DriverOut {
 public:
     virtual ~DriverOut() = default;
-    virtual void send(int* data) = 0;  
+    virtual void send(int* data) = 0;
 };
 
 #endif // DRIVER_OUT_H_

@@ -30,6 +30,7 @@ void Telemetry::run(void* pvParameters) {
 };
 
 void Telemetry::serialise(flight_data* data, int serialised_data[45]){
+    //need to optimise this
     //format of:
     //state|core_time|pressure|temp|altitude|velocity|accel|sec_time|lat|long|
     size_t offset = 0;
