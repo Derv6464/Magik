@@ -1,6 +1,9 @@
 #include "state_machine.h"
 
-StateMachine::StateMachine(StateHandler handlers[])
+StateMachine::StateMachine(StateHandler handlers[], flash_internal_data settings)
+    : main_height(settings.main_height),
+      drouge_delay(settings.drouge_delay),
+      liftoff_threshold(settings.liftoff_thresh)
 {
     // Initialize the state machine with function pointer array
     for (int i = 0; i < NUM_STATES; ++i)
@@ -76,7 +79,7 @@ void StateMachine::check_ready_state_done(float accel)
     //float accel = (accel_x * accel_x) + (accel_y * accel_y) + (accel_z * accel_z);
     float threshold = 30; //to get set by user
     printf("State Machine: Ready, accel: %f, threshold: %f \n", fabsf(accel), (threshold/9.81));
-    if (fabsf(accel) > (threshold/9.81f))
+    if (fabsf(accel) > (liftoff_threshold/9.81f))
     {
         change_state(State::POWERED);
     }
@@ -103,7 +106,7 @@ void StateMachine::check_coasting_state_done(float velocity)
 
 void StateMachine::check_drouge_state_done(float height)
 {
-    if (height < 100.0f)
+    if (height < main_height)
     { // add main var
         // printf("State Machine: Main, height: %f\n", height);
         change_state(State::MAIN);

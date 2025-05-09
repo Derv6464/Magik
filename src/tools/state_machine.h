@@ -9,7 +9,7 @@
 
 class StateMachine {
 public:
-    typedef void (*StateHandler)();
+    using StateHandler = std::function<void()>;
     enum State {
         INIT,
         CALIBRATING,
@@ -22,7 +22,7 @@ public:
         NUM_STATES
     };
 
-    StateMachine(StateHandler handlers[]);
+    StateMachine(StateHandler handlers[], flash_internal_data settings);
     void run(void * pvParameters );
 
     KalmanFilter kalman_filter;
@@ -41,4 +41,9 @@ private:
     void check_drouge_state_done(float height);
     void check_main_state_done(float height);
     void change_state(State new_state);
+
+    //hard coded low limit values in case settings are not set
+    int main_height{200};
+    int drouge_delay{0};
+    int liftoff_threshold{20};
 };

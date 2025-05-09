@@ -53,7 +53,8 @@ void handle_powered() {
     printf("unlcking pyro\n");
  }
 void handle_coasting() { printf("State: COASTING\n"); }
-void handle_drouge() { 
+void handle_drouge(int delay) { 
+    sleep_ms(delay);
     //ignite.fire(1);
     printf("State: DROUGE\n");
  }
@@ -196,12 +197,12 @@ void run_flight(Status_led* status_led, FlightSettings* flight_settings) {
         handle_ready,
         handle_powered,
         handle_coasting,
-        handle_drouge,
+        [=]() { handle_drouge(flight_settings->getDrougeDeployDelay()); },
         handle_main,
         handle_landed
     };
 
-    StateMachine* fsm = new StateMachine(state_handlers);
+    StateMachine* fsm = new StateMachine(state_handlers, flight_settings->get_settings());
     //take in flight settings to init heights
 
     StateMachineArgs* fsmArgs = new StateMachineArgs{
@@ -228,17 +229,6 @@ void run_flight(Status_led* status_led, FlightSettings* flight_settings) {
     #endif
     //xTaskCreate(printRunning, "PrintTask", 256, NULL, 3, NULL);
     //xTaskCreate(run_telem, "Telemetry Task", 512, telemArgs, 2, NULL);
-
-    #ifdef TESTING
-    gpio_init(neopixel);
-    gpio_set_dir(neopixel, GPIO_OUT);
-
-    // Pull the RUN pin low to reset the second Pico
-    gpio_put(neopixel, 1);
-    printf("RUN pin low\n");
-
-    gpio_put(neopixel, 0);
-    #endif
 
     vTaskStartScheduler();
 
@@ -345,9 +335,9 @@ int main() {
     status_led.set_color(Status_led::Color::RED);
   
     FlightSettings flight_settings;
-    flight_settings.get_settings();
+    flight_settings.read_settings();
 
-    if (gpio_get(bt_setting_pin)) {  
+    if (!gpio_get(bt_setting_pin)) {  
         printf("Running settings\n");
         run_settings(&status_led, &flight_settings);
     } else {

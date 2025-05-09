@@ -31,6 +31,12 @@ public:
     void setDrougeDeployDelay(int delay) { drouge_deploy_delay = delay; }
     void setLiftoffThreshold(int threshold) { liftoff_threshold = threshold; }
 
+    flash_internal_data get_settings()
+    {
+        flash_internal_data settings = {main_deploy_height, drouge_deploy_delay, liftoff_threshold, 0};
+        return settings;
+    }
+
     void save_settings(flash_internal_data settings)
     {
         this->main_deploy_height = settings.main_height;
@@ -39,7 +45,7 @@ public:
         write_setting();
     }
 
-    flash_internal_data get_settings()
+    flash_internal_data read_settings()
     {
         printf("Reading settings from flash memory...\n");
         // Implement the logic to read settings from flash memory
@@ -69,6 +75,9 @@ public:
         // int last_log = *(int*)(buffer + 12);
         printf("Settings: Drouge Delay: %d, Main Height: %d, Liftoff Thresh: %d\n", settings.drouge_delay, settings.main_height, settings.liftoff_thresh);
 
+        main_deploy_height = settings.main_height;
+        drouge_deploy_delay = settings.drouge_delay;
+        liftoff_threshold = settings.liftoff_thresh;
        
         return settings;
     }
