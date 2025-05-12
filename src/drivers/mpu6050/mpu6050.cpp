@@ -2,7 +2,7 @@
 #ifdef ACCEL_MPU6050
 #include "mpu6050.h"
 
-MPU6050::MPU6050(I2C *i2c, int addr){
+MPU6050::MPU6050(I2C_BASE *i2c, int addr){
     this->i2c = i2c;
     this->device_addr = addr;
     reset();

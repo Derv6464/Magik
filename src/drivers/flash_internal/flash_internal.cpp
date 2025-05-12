@@ -2,8 +2,6 @@
 
 FlashInternal::FlashInternal() {
     printf("Flash Logger created\n");
-    // Initialize flash memory here
-    // For example, you might want to set up the SPI interface and the CS pin
 };
 
 void FlashInternal::send(int* data) {
@@ -33,13 +31,11 @@ void FlashInternal::send(int* data) {
     }
 };
 
-// This function will be called when it's safe to call flash_range_erase
 void FlashInternal::call_flash_range_erase(void *param) {
     uint32_t offset = (uint32_t)param;
     flash_range_erase(offset, FLASH_SECTOR_SIZE);
 }
 
-// This function will be called when it's safe to call flash_range_program
 void FlashInternal::call_flash_range_program(void *param) {
     uint32_t offset = ((uintptr_t*)param)[0];
     const uint8_t *data = (const uint8_t *)((uintptr_t*)param)[1];

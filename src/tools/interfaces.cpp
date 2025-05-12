@@ -106,14 +106,14 @@ void I2C::setup() {
     bi_decl(bi_2pins_with_func(sda, scl, GPIO_FUNC_I2C));
 };
 
-void I2C::write(int addr, uint8_t* data, int len){
+void I2C::write(int addr, uint8_t* data, uint len){
     i2c_write_blocking(i2c_default, addr, data, len, false); 
     //sleep_ms(10); doesnt work in debug
     printf("bla bla bla\n");  //killin time cause debug hates sleep
 
 };
 
-void I2C::read(int addr, uint8_t data, uint8_t* buf, int len) {
+void I2C::read(int addr, uint8_t data, uint8_t* buf, uint len) {
     i2c_write_blocking(i2c_default, addr, &data, 1, true);
     i2c_read_blocking(i2c_default, addr, buf, len, false);
     printf("\n");  //killin time cause debug hates sleep
@@ -160,3 +160,28 @@ void UART::read(char* buffer, int custom_packet_size){
         }
     }
 };
+
+
+
+I2C_PIO::I2C_PIO(int sda, int scl, PIO pio){
+    this->sda = sda;
+    this->scl = scl;
+    this->pio = pio;
+
+    setup();
+}
+void I2C_PIO::write(int addr, uint8_t* data, uint len){
+    pio_i2c_write_blocking(pio, sm, addr, data, len);
+    //sleep_ms(10); doesnt work in debug
+    printf("bla bla bla\n");  //killin time cause debug hates sleep
+    
+}
+void I2C_PIO::read(int addr, uint8_t data, uint8_t* buf, uint len){
+    pio_i2c_read_blocking(pio, sm, addr, buf, len);
+
+}
+
+void I2C_PIO::setup(){
+    uint offset = pio_add_program(pio, &i2c_program);
+    i2c_program_init(pio, sm, offset, sda, scl);
+}

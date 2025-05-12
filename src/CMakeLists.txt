@@ -2,6 +2,7 @@ file(GLOB SOURCES
     main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/outputs/*.cpp  
     ${CMAKE_CURRENT_SOURCE_DIR}/tools/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/tools/i2c_pio/pio_i2c.c
     ${CMAKE_CURRENT_SOURCE_DIR}/sensors/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/drivers/bmp390/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/drivers/bmp390/*.c
@@ -49,3 +50,5 @@ pico_btstack_make_gatt_header(${ProjectName}  PRIVATE "${CMAKE_CURRENT_LIST_DIR}
 pico_add_extra_outputs(${ProjectName})
 
 pico_generate_pio_header(${ProjectName} ${CMAKE_CURRENT_SOURCE_DIR}/outputs/ws2812.pio)
+pico_generate_pio_header(${ProjectName} ${CMAKE_CURRENT_SOURCE_DIR}/tools/i2c_pio/i2c.pio)
+

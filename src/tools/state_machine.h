@@ -11,7 +11,6 @@ class StateMachine {
 public:
     using StateHandler = std::function<void()>;
     enum State {
-        INIT,
         CALIBRATING,
         READY,
         POWERED,

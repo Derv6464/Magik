@@ -22,7 +22,7 @@
 class Accelerometer: public Sensor<core_flight_data> {
     public:
         Accelerometer(SPI *spi, int cs);
-        Accelerometer(I2C *i2c, int addr);
+        Accelerometer(I2C_BASE *i2c, int addr);
         #ifdef TESTING
         Accelerometer(TestHandler* handler);
         #endif

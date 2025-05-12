@@ -14,7 +14,7 @@ Accelerometer::Accelerometer(SPI *spi, int cs) {
 
 }
 
-Accelerometer::Accelerometer(I2C *i2c, int addr) {
+Accelerometer::Accelerometer(I2C_BASE *i2c, int addr) {
     printf("Accelerometer created, i2c\n");
 
     #ifdef ACCEL_ADXL345

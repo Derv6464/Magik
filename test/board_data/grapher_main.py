@@ -65,7 +65,6 @@ def get_test_data(filename):
 
     #df['time_diff'] = df['time'].diff()  # Difference between consecutive times
 
-    # Drop the first row if needed (since its diff will be NaN)
     #avg_time_diff = df['time_diff'].iloc[1:].mean()
     #scaling_factor = 0.03 / avg_time_diff
     #print("Scaling factor:", scaling_factor)
@@ -176,23 +175,21 @@ def add_vertical_lines(fig, df_vega, test = None):
         test['state_change'] = test['state'] != test['state'].shift()
         test['state_group'] = test['state_change'].cumsum()
 
-        # Count the size of each state group
+    
         group_sizes = test.groupby('state_group')['state'].transform('count')
 
-        # Mark groups that are "stable" (i.e., at least 3 rows long)
+      
         test['is_stable'] = group_sizes >= 3
 
-        # Filter out unstable (short-lived) state groups by forward-filling the last stable state
+
         test['filtered_state'] = test.apply(
             lambda row: row['state'] if row['is_stable'] else np.nan,
             axis=1
         )
         test['filtered_state'] = test['filtered_state'].ffill()
 
-        # Identify true changes in filtered (denoised) state
         test['filtered_change'] = test['filtered_state'].ne(test['filtered_state'].shift())
 
-        # Get rows where real, stable state changes happen
         state_changes = test[test['filtered_change']]
 
         print("State changes:")
@@ -341,15 +338,97 @@ def make_cots_alt(fig, base):
 
     return fig
 
+def make_alt_graph_with_animation(base, test):
+
+    test = test.sort_values('time_scaled')
+    base = base.sort_values('ts')
+
+    base = pd.merge_asof(base, test, left_on='ts', right_on='time_scaled', direction='nearest')
+
+
+
+    base.index = base['ts']
+   
+
+    min_time = max(test['time_scaled'].min(), base['ts'].min())
+    max_time = min(test['time_scaled'].max(), base['ts'].max())
+
+    
+
+    frames = []
+    for t in range(int(min_time*100), int(max_time*100), 1):  
+        alt_magik = np.interp(t, test['time_scaled'], test['alt'])
+        alt_vega = np.interp(t, base['ts'], base['height'])
+        alt_egg = np.interp(t, base['ts'], base['eggFAlt'])
+
+        frames.append(go.Frame(
+            data=[
+                go.Scatter(x=[base['ts'][t/100]], y=[base['alt'][t/100]], mode='markers+text',
+                           marker=dict(color='blue', size=8),
+                           text=[f"Time: {t:.2f}s<br>Magik: {test['alt'][t/100]:.1f}m"],
+                           textposition="top right",
+                           showlegend=False),
+                go.Scatter(x=[base['ts'][t/100]], y=[base['eggFAlt'][t/100]], mode='markers+text',
+                           marker=dict(color='green', size=8),
+                           text=[f"Eggtimer: {base['eggFAlt'][t/100]:.1f}m"],
+                           textposition="middle right",
+                           showlegend=False),
+                go.Scatter(x=[base['ts'][t/100]], y=[base['height'][t/100]], mode='markers+text',
+                           marker=dict(color='red', size=8),
+                           text=[f"Vega: {base['height'][t/100]:.1f}m"],
+                           textposition="bottom right",
+                           showlegend=False),
+                go.Scatter(x=[t/100, t/100], y=[0, base['height'].max()],
+                           mode='lines',
+                           line=dict(color='black', dash='dash'),
+                           showlegend=False)
+            ],
+            name=f'{t:.2f}'
+        ))
+
+    layout = go.Layout(
+        title=dict(text="Altitude Comparison with Animation", x=0.5),
+        xaxis=dict(title="Time (s)", range=[min_time, max_time]),
+        yaxis=dict(title="Height (m)"),
+        updatemenus=[dict(
+            type="buttons",
+            showactive=False,
+            buttons=[dict(label="Play", method="animate", args=[None, {
+                "frame": {"duration": 50, "redraw": True},
+                "fromcurrent": True,
+                "transition": {"duration": 0}
+            }])]
+        )],
+        sliders=[dict(
+            steps=[dict(method="animate",
+                        args=[[f'{t:.2f}'], dict(mode="immediate", frame=dict(duration=0), transition=dict(duration=0))],
+                        label=f"{t:.1f}s")
+                   for t in range(int(min_time*100), int(max_time*100), 5)],
+            active=0,
+            x=0.1,
+            xanchor="left",
+            y=0,
+            yanchor="top"
+        )]
+    )
+
+    fig = go.Figure( layout=layout, frames=frames)
+    return fig
+
+
 if __name__ == "__main__":
     fig = go.Figure()
     df_vega = get_base_data()
-    df_egg = get_test_data('4')
+    df_egg = get_test_data('6')
     #fig = make_accel_graph(fig, df_vega, df_egg)
-    #fig = make_vel_graph(fig, df_vega, df_egg)
-    fig = make_alt_graph(fig, df_vega, df_egg)
+    fig = make_vel_graph(fig, df_vega, df_egg)
+   
     #fig = make_cots_alt(fig, df_vega)
     #fig = make_cots_vel(fig, df_vega)
-    #fig = add_vertical_lines(fig, df_vega, df_egg)
-    fig = add_bounds_percent(fig, df_vega)
+    
+    #fig = make_alt_graph_with_animation(df_vega, df_egg)
+    fig = add_vertical_lines(fig, df_vega, df_egg)
+    #fig = make_alt_graph(fig, df_vega, df_egg)
+    #fig = add_bounds_meter(fig, df_vega)
+    #fig = add_bounds_percent(fig, df_vega)
     fig.show()

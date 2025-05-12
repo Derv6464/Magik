@@ -37,11 +37,11 @@ void Pyro::fire(int pyro_num) {
     }
     if (pyro_num == 1) {
         gpio_put(pyro_1_pin, 1);
-        sleep_ms(1000);
+        busy_wait_ms(500);
         gpio_put(pyro_1_pin, 0);
     } else if (pyro_num == 2) {
         gpio_put(pyro_2_pin, 1);
-        sleep_ms(1000);
+        busy_wait_ms(500);
         gpio_put(pyro_2_pin, 0);
     } else {
         printf("Invalid pyro number\n");

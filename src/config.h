@@ -9,7 +9,7 @@
 //#define BARO_BMP390
 //#define ACCEL_LSM6DS3
 //#define ACCEL_ADXL345
-//#define ACCEL_MPU6050
+#define ACCEL_MPU6050
 //#define GPS_MAXM10S
 //#define RADIO_SX1278
 //#define LOG_SD
@@ -19,7 +19,9 @@
 //#define ACCEL_LSM6DSOX
 //#define GPS_PA
 //#define RADIO_RM95W
+
 #endif
+
 
 #define LOG_INTERNAL_FLASH
 #define LOG_FLASH_OFFSET 1024*1024 
@@ -64,10 +66,10 @@
 
 //Pyro channels
 #define pyro_en 6
-#define pyro_1 21
-#define pyro_2 22
-#define pyro_check_1 26
-#define pyro_check_2 27
+#define pyro_1 26
+#define pyro_2 27
+//#define pyro_check_1 26
+//#define pyro_check_2 27
 
 #define bt_setting_pin 2
 

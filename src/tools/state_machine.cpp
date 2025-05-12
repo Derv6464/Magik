@@ -11,7 +11,8 @@ StateMachine::StateMachine(StateHandler handlers[], flash_internal_data settings
         state_handlers[i] = handlers[i];
         called_once[i] = false; // Mark that functions haven't been called
     }
-    current_state = State::INIT;
+    change_state(State::CALIBRATING);
+   // current_state = State::CALIBRATING;
 }
 
 void StateMachine::update_state(core_flight_data raw_data, prediction_data prediction)
@@ -23,9 +24,6 @@ void StateMachine::update_state(core_flight_data raw_data, prediction_data predi
     // printf("Altitude: %f\n", data.barometer.altitude);
     switch (current_state)
     {
-    case State::INIT:
-        check_settings_state_done(raw_data.setting_pin);
-        break;
     case State::CALIBRATING:
         check_calibrating_state_done();
         break;
@@ -77,9 +75,9 @@ void StateMachine::check_calibrating_state_done()
 void StateMachine::check_ready_state_done(float accel)
 {
     //float accel = (accel_x * accel_x) + (accel_y * accel_y) + (accel_z * accel_z);
-    float threshold = 30; //to get set by user
-    printf("State Machine: Ready, accel: %f, threshold: %f \n", fabsf(accel), (threshold/9.81));
-    if (fabsf(accel) > (liftoff_threshold/9.81f))
+
+    printf("State Machine: Ready, accel: %f, threshold: %f \n", fabsf(accel), (static_cast<float>(liftoff_threshold)/9.81));
+    if (fabsf(accel) > (static_cast<float>(liftoff_threshold)/9.81f))
     {
         change_state(State::POWERED);
     }
@@ -106,7 +104,7 @@ void StateMachine::check_coasting_state_done(float velocity)
 
 void StateMachine::check_drouge_state_done(float height)
 {
-    if (height < main_height)
+    if (height < static_cast<float>(main_height))
     { // add main var
         // printf("State Machine: Main, height: %f\n", height);
         change_state(State::MAIN);
@@ -126,10 +124,10 @@ void StateMachine::change_state(State new_state)
 {
     if (new_state != current_state)
     {
-        if (!called_once[current_state])
+        if (!called_once[new_state])
         {
-            state_handlers[current_state](); // make sure this becomes async/ freeRTOS task
-            called_once[current_state] = true;
+            state_handlers[new_state]();
+            called_once[new_state] = true;
         }
         current_state = new_state;
     }
@@ -139,7 +137,7 @@ void StateMachine::run(void *pvParameters)
 {
     // printf("State Machine Task\n");
     AllQueuesArgs *args = static_cast<AllQueuesArgs *>(pvParameters);
-    // redo this
+
     QueueHandle_t coreDataQueue = args->coreDataQueue;
     QueueHandle_t secDataQueue = args->secDataQueue;
     QueueHandle_t flightDataQueue = args->flightDataQueue;

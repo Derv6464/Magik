@@ -39,27 +39,32 @@
  
 using Eigen::MatrixXd;
 
-void handle_init() { printf("State: INIT\n"); }
-void handle_bluetooth_settings() {
-    //start bt settings server
-    printf("State: BLUETOOTH_SETTINGS\n"); }
+
 void handle_calibrating() { 
-    //
     printf("State: CALIBRATING\n"); 
 }
-void handle_ready() { printf("State: READY\n"); }
-void handle_powered() { 
+void handle_ready() { printf("State: READY\nAll sensors good\n"); }
+void handle_powered(Pyro* ignite) { 
     printf("State: POWERED\n");
     printf("unlcking pyro\n");
+    ignite->unlock();
  }
 void handle_coasting() { printf("State: COASTING\n"); }
-void handle_drouge(int delay) { 
+void handle_drouge(int delay, Pyro* ignite) { 
     sleep_ms(delay);
-    //ignite.fire(1);
+    ignite->fire(1);
     printf("State: DROUGE\n");
  }
-void handle_main() { printf("State: MAIN\n"); }
-void handle_landed() { printf("State: LANDED\n"); }
+void handle_main(Pyro* ignite) { 
+    ignite->fire(2);
+    printf("State: MAIN\n");
+}
+
+void handle_landed(TaskHandle_t secHandle, TaskHandle_t telemHandle) { 
+    printf("State: LANDED\n");
+    vTaskPrioritySet(secHandle, 5);
+    //vTaskPrioritySet(telemHandle, 5);
+ }
 
 struct StateMachineArgs {
     StateMachine* fsm;
@@ -109,45 +114,6 @@ void run_test_hander(void* pvParameters) {
 };
 #endif
 
-//void print_core_sensor_data(void* pvParameters) {
-//    QueueHandle_t coreDataQueue = static_cast<QueueHandle_t>(pvParameters);
-//    core_flight_data data;
-//    
-//    while (true) {
-//        if (xQueuePeek(coreDataQueue, &data, portMAX_DELAY) == pdTRUE) {
-//            printf("Time: %d, Pressure: %d\n", data.time, data.barometer.pressure);
-//            printf("Acceleration: X=%f, Y=%f, Z=%f\n", data.acceleration.x, data.acceleration.y, data.acceleration.z);
-//            printf("Temperature: %f°C, BT Active: %d\n", data.barometer.temperature, data.bt_active);
-//            printf("\n");
-//        } else {
-//            printf("Failed to receive data from core queue\n");
-//        }
-//        vTaskDelay(pdMS_TO_TICKS(1000));
-//    }
-//}
-
-//void print_secondary_sensor_data(void* pvParameters) {
-//    QueueHandle_t secDataQueue = static_cast<QueueHandle_t>(pvParameters);
-//    secondary_flight_data data;
-//    
-//    while (true) {
-//        if (xQueuePeek(secDataQueue, &data, portMAX_DELAY) == pdTRUE) {
-//            printf("GPS Latitude: %lf, Longitude: %lf\n", data.gps.latitude, data.gps.longitude);
-//            printf("\n");
-//        } else {
-//            printf("Failed to receive data from secondary queue\n");
-//        }
-//        vTaskDelay(pdMS_TO_TICKS(1000));
-//    }
-//}
-
-
-//static void printRunning(void* pvParameters){
-//    while (1){
-//        printf("Running\n");
-//        vTaskDelay(pdMS_TO_TICKS(1000));
-//    }
-//}
 void run_flight(Status_led* status_led, FlightSettings* flight_settings) {
     QueueHandle_t coreDataQueue = xQueueCreate(3, sizeof(core_flight_data));
     QueueHandle_t secDataQueue = xQueueCreate(3, sizeof(secondary_flight_data));
@@ -158,9 +124,9 @@ void run_flight(Status_led* status_led, FlightSettings* flight_settings) {
     printf("coreDataQueue: %d\n", sizeof(core_flight_data));
     printf("secDataQueue: %d\n", sizeof(secondary_flight_data));
 
-    Pyro ignite = Pyro(pyro_en, pyro_1, pyro_2);
-    ignite.lock();
-    
+    Pyro* ignite = new Pyro(pyro_1, pyro_2, pyro_en);
+    ignite->lock();
+
     uart_inst_t* port = uart_get_instance(1);
     i2c_inst_t* i2c_port = i2c_get_instance(0);
 
@@ -174,12 +140,22 @@ void run_flight(Status_led* status_led, FlightSettings* flight_settings) {
     Radio* radio = new Radio();
     Logger* logger = new Logger();
     #else
-    SPI spi_1(sck_1, mosi_1, miso_1, spi1);
-    Barometer barometer(&spi_1, cs_baro);
+    //SPI spi_1(sck_1, mosi_1, miso_1, spi1);
+    //Barometer barometer(&spi_1, cs_baro);
+
     //I2C i2c_0(sda_0, scl_0, i2c_port);
+    //PIO pio = pio0;
+    //I2C_PIO i2c_0(sck_0, mosi_0, pio);
     //int mpu = 0x68;
     //Accelerometer accelerometer(&i2c_0, mpu);
+    //core_flight_data coreData;
+    //accelerometer.update(&coreData);
+    //printf("Accelerometer: %f %f %f\n", coreData.acceleration.x, coreData.acceleration.y, coreData.acceleration.z);
     #endif
+
+    TaskHandle_t telemHandel; 
+    TaskHandle_t secHandel;
+
 
     printf("UART created\n");
     
@@ -188,18 +164,16 @@ void run_flight(Status_led* status_led, FlightSettings* flight_settings) {
     core_sensors.addSensor(&accelerometer);
 
     SensorHandler<secondary_flight_data> sec_sensors(secDataQueue);
-    sec_sensors.addSensor(&gps);
+    //sec_sensors.addSensor(&gps);
 
     StateMachine::StateHandler state_handlers[] = {
-        handle_init,
-        handle_bluetooth_settings,
         handle_calibrating,
         handle_ready,
-        handle_powered,
+        [=]() { handle_powered(ignite); },
         handle_coasting,
-        [=]() { handle_drouge(flight_settings->getDrougeDeployDelay()); },
-        handle_main,
-        handle_landed
+        [=]() { handle_drouge(flight_settings->getDrougeDeployDelay(), ignite); },
+        [=]() { handle_main(ignite); },
+        [=]() { handle_landed(secHandel, telemHandel); },
     };
 
     StateMachine* fsm = new StateMachine(state_handlers, flight_settings->get_settings());
@@ -220,15 +194,16 @@ void run_flight(Status_led* status_led, FlightSettings* flight_settings) {
     //    .telem = telemetry,
     //    .flightDataQueue = flightDataQueue
     //};
- 
+    status_led->set_color(Status_led::Color::GREEN);
+
     xTaskCreate(run_task, "Flight_State_Task", 512, fsmArgs, 3, NULL);
     xTaskCreate(run_core_sensors, "CoreSensorTask", 512, &core_sensors, 4, NULL);
-    xTaskCreate(run_secondary_sensors, "SecondarySensorTask", 256, &sec_sensors, 2, NULL);
+    xTaskCreate(run_secondary_sensors, "SecondarySensorTask", 256, &sec_sensors, 2, &secHandel);
     #ifdef TESTING
     xTaskCreate(run_test_hander, "TestHandlerTask", 512, &testHandler, 5, NULL);
     #endif
     //xTaskCreate(printRunning, "PrintTask", 256, NULL, 3, NULL);
-    //xTaskCreate(run_telem, "Telemetry Task", 512, telemArgs, 2, NULL);
+    //xTaskCreate(run_telem, "Telemetry Task", 512, telemArgs, 2, &telemHandel);
 
     vTaskStartScheduler();
 
@@ -304,10 +279,6 @@ int run_settings(Status_led* status_led, FlightSettings* flight_settings) {
     flight_settings->save_settings(settings);
 
 
-    // btstack_run_loop_execute is only required when using the 'polling' method (e.g. using pico_cyw43_arch_poll library).
-    // This example uses the 'threadsafe background` method, where BT work is handled in a low priority IRQ, so it
-    // is fine to call bt_stack_run_loop_execute() but equally you can continue executing user code.
-
     #if 0 // btstack_run_loop_execute() is not required, so lets not use it
         btstack_run_loop_execute();
     #else
@@ -335,6 +306,13 @@ int main() {
     status_led.set_color(Status_led::Color::RED);
   
     FlightSettings flight_settings;
+    //whats saved in flash rn:
+    //flight_settings.save_settings({
+    //    .main_height = 200,
+    //    .drouge_delay = 0,
+    //    .liftoff_thresh = 30,
+    //    .last_log = 0
+    //});
     flight_settings.read_settings();
 
     if (!gpio_get(bt_setting_pin)) {  

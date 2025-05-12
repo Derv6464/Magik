@@ -19,11 +19,11 @@ typedef enum {
 
 class MPU6050 : public DriverIn<accle_data> {
     public:
-        MPU6050(I2C *i2c, int addr);
+        MPU6050(I2C_BASE *i2c, int addr);
         ~MPU6050();
         void update(accle_data& data) override;
     private:
-        I2C *i2c;
+        I2C_BASE *i2c;
         int device_addr;
         void reset();
         void read_raw_accel(int16_t accel[3]);

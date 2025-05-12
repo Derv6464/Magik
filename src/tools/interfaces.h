@@ -11,6 +11,7 @@
 #include "hardware/uart.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "i2c_pio/pio_i2c.h"
 
 #define READ_BIT 0x80
 
@@ -46,11 +47,18 @@ class SPI_Device{
         int cs;
 };
 
-class I2C{
+class I2C_BASE{
+    public:
+        virtual void write(int addr, uint8_t* data, uint len) = 0;
+        virtual void read(int addr, uint8_t data, uint8_t* buf, uint len) = 0;
+        virtual ~I2C_BASE() = default;
+};
+
+class I2C : public I2C_BASE {
     public:
         I2C(int sda, int scl, i2c_inst_t* port);
-        void write(int addr, uint8_t* data, int len);
-        void read(int addr, uint8_t data, uint8_t* buf, int len);
+        void write(int addr, uint8_t* data, uint len) override;
+        void read(int addr, uint8_t data, uint8_t* buf, uint len) override;
 
     private:
         void setup();
@@ -76,4 +84,19 @@ class UART{
         int baudrate;
         int packet_size;
 };
+
+class I2C_PIO: public I2C_BASE{
+    public:
+        I2C_PIO(int sda, int scl, PIO pio);
+        void write(int addr, uint8_t* data, uint len) override;
+        void read(int addr, uint8_t data, uint8_t* buf, uint len) override;
+
+    private:
+        void setup();
+        PIO pio;
+        int sda;
+        int scl;
+        uint sm{0};
+};
+
 #endif // INTERFACES_H
