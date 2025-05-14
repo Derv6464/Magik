@@ -140,16 +140,16 @@ void run_flight(Status_led* status_led, FlightSettings* flight_settings) {
     Radio* radio = new Radio();
     Logger* logger = new Logger();
     #else
-    //SPI spi_1(sck_1, mosi_1, miso_1, spi1);
-    //Barometer barometer(&spi_1, cs_baro);
+    SPI spi_1(sck_1, mosi_1, miso_1, spi1);
+    Barometer barometer(&spi_1, cs_baro);
 
     //I2C i2c_0(sda_0, scl_0, i2c_port);
-    //PIO pio = pio0;
-    //I2C_PIO i2c_0(sck_0, mosi_0, pio);
-    //int mpu = 0x68;
-    //Accelerometer accelerometer(&i2c_0, mpu);
-    //core_flight_data coreData;
-    //accelerometer.update(&coreData);
+    PIO pio = pio0;
+    I2C_PIO i2c_0(sck_0, mosi_0, pio);
+    int mpu = 0x68;
+    Accelerometer accelerometer(&i2c_0, mpu);
+    core_flight_data coreData;
+    accelerometer.update(&coreData);
     //printf("Accelerometer: %f %f %f\n", coreData.acceleration.x, coreData.acceleration.y, coreData.acceleration.z);
     #endif
 

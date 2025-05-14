@@ -1,7 +1,7 @@
 #pragma once
 
-#define TESTING
-//#define TEST_RIG
+//#define TESTING
+#define TEST_RIG
 
 #define read_data_delay 50 //ms 
 #define send_data_delay 5000 //ms
