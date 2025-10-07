@@ -60,12 +60,12 @@ BMP390::~BMP390(){
 
 void BMP390::read(){
     int8_t rslt;
-    /* Used to select the settings user needs to change */
+
     uint16_t settings_sel = 0;
-    /* Variable used to select the sensor component */
+    
     uint8_t sensor_comp = 0;
 
-    /* Select the pressure and temperature sensor to be enabled */
+   
     settings.temp_en = BMP3_ENABLE;
     settings_sel |= BMP3_SEL_TEMP_EN;
     sensor_comp |= BMP3_TEMP;
@@ -100,7 +100,7 @@ void BMP390::bmp3_check_rslt(const char api_name[], int8_t rslt)
     {
         case BMP3_OK:
 
-            /* Do nothing */
+            
             break;
         case BMP3_E_NULL_PTR:
             printf("API [%s] Error [%d] : Null pointer\r\n", api_name, rslt);

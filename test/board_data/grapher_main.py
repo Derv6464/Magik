@@ -252,15 +252,6 @@ def add_vertical_lines(fig, df_vega, test = None):
         align='center'),
         annotation_text = "Eggtimer Drogue & ",
     )
-    fig.add_vline(
-        x = df_vega['ts'][df_vega['Main'].idxmax()],
-        line_width = 2,
-        line_dash = 'dot',
-        line_color = 'green',
-        annotation_position="top left",
-        annotation=dict(font=dict(size=10, color="green"), textangle=-90),
-        annotation_text = "Eggtimer Main",
-    )
 
     return fig
 
